@@ -1,4 +1,4 @@
-const CACHE = "traintrack-market-v20";
+const CACHE = "traintrack-market-v21";
 const APP_SHELL = ["./","./index.html","./styles.css","./extensions.css","./bootstrap.js","./config.js","./auth-redirect.js","./app.js","./extensions-core.js","./score-model.js","./extensions-calendar.js","./assessment-edit.js","./templates-progress-v2.js","./score-ui-patch.js","./progress-comparison.js","./summary-delta-ui.js","./print-report.js","./calendar-nav-v2.js","./calendar-event-edit.js","./manifest.json","./icon.svg"];
 
 self.addEventListener("install", event => {
