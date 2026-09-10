@@ -89,6 +89,10 @@ jobs:
           grep -q "recurrence_exceptions" calendar-event-edit.js
           grep -q "grid-template-columns:repeat(2" dashboard-home-ui.js
           grep -q "Próximos 30 dias" dashboard-home-ui.js
+          grep -q "ttBirthdaySMS" dashboard-home-ui.js
+          grep -q "ttBirthdayWhatsApp" dashboard-home-ui.js
+          grep -q "wa.me" dashboard-home-ui.js
+          grep -q "Template de mensagem de aniversário" dashboard-home-ui.js
           grep -q "weightEach: 1 / 3" score-model.js
           grep -q "ttCompareProgress" progress-comparison.js
           grep -q "data-reference" progress-comparison.js
