@@ -2,8 +2,8 @@
   'use strict';
 
   const SUPABASE_SOURCES = [
-    'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.116.0/dist/umd/supabase.js',
-    'https://unpkg.com/@supabase/supabase-js@2.116.0/dist/umd/supabase.js'
+    'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.116.0',
+    'https://unpkg.com/@supabase/supabase-js@2.116.0'
   ];
 
   const loadScript = (src) => new Promise((resolve, reject) => {
@@ -18,18 +18,6 @@
     document.head.appendChild(script);
   });
 
-  const loadLocalScripts = async () => {
-    for (const src of [
-      './config.js',
-      './auth-redirect.js',
-      './app.js',
-      './extensions-core.js',
-      './extensions-calendar.js'
-    ]) {
-      await loadScript(src);
-    }
-  };
-
   const showError = (title, detail = '') => {
     const root = document.getElementById('root');
     if (!root) return;
@@ -38,7 +26,6 @@
 
   const start = async () => {
     let loaded = false;
-
     for (const src of SUPABASE_SOURCES) {
       try {
         await loadScript(src);
@@ -50,14 +37,14 @@
         console.warn(error.message);
       }
     }
-
     if (!loaded) {
-      showError('Não foi possível carregar a ligação ao Supabase.', 'Foram tentadas duas fontes do bundle browser.');
+      showError('Não foi possível carregar a ligação ao Supabase.', 'Falha ao carregar a biblioteca Supabase.');
       return;
     }
-
     try {
-      await loadLocalScripts();
+      for (const src of ['./config.js','./auth-redirect.js','./app.js','./extensions-core.js','./extensions-calendar.js']) {
+        await loadScript(src);
+      }
     } catch (error) {
       console.error(error);
       showError('Não foi possível iniciar a aplicação.', error?.message || 'Erro inesperado no carregamento.');
