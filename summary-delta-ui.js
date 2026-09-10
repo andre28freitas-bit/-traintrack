@@ -6,7 +6,7 @@ style.textContent = `
 .tt-highlight small.tt-delta-up{color:#15803d;font-weight:800}
 .tt-highlight small.tt-delta-down{color:#b91c1c;font-weight:800}
 .tt-highlight small.tt-delta-flat{color:#64748b;font-weight:750}
-.tt-highlight small .tt-delta-percent{display:block;margin-top:2px;font-size:9px;font-weight:700;opacity:.82}
+.tt-highlight small .tt-delta-percent{display:block;margin-top:2px;font-size:9px;font-weight:700;opacity:.82;color:inherit}
 `;
 document.head.appendChild(style);
 
@@ -23,6 +23,8 @@ const percentText = value => new Intl.NumberFormat('pt-PT', {
   signDisplay: 'always'
 }).format(value) + '%';
 
+const safe = value => String(value || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
+
 function decorateSummaryCards(){
   document.querySelectorAll('.tt-highlights .tt-highlight').forEach(card => {
     const strong = card.querySelector('strong');
@@ -36,25 +38,30 @@ function decorateSummaryCards(){
       return;
     }
 
-    const current = parseNumber(strong.textContent);
-    const delta = parseNumber(original);
+    const dataCurrent = small.dataset.current === '' ? null : Number(small.dataset.current);
+    const dataBaseline = small.dataset.baseline === '' ? null : Number(small.dataset.baseline);
+    const current = Number.isFinite(dataCurrent) ? dataCurrent : parseNumber(strong.textContent);
+    let previous = Number.isFinite(dataBaseline) ? dataBaseline : null;
+    let delta = current != null && previous != null ? current - previous : parseNumber(original);
     if (current == null || delta == null) return;
+    if (previous == null) previous = current - delta;
 
-    const previous = current - delta;
     const pct = Math.abs(previous) > 1e-9 ? (delta / Math.abs(previous)) * 100 : null;
     const isFlat = Math.abs(delta) < 1e-9;
-    const absolute = original.replace(/\s+vs anterior$/i,'');
+    const match = original.match(/\s+vs\s+(.+)$/i);
+    const reference = small.dataset.reference || match?.[1] || 'anterior';
+    const absolute = original.replace(/\s+vs\s+.+$/i,'').trim();
 
     small.classList.remove('tt-delta-up','tt-delta-down','tt-delta-flat');
     if (isFlat) {
       small.classList.add('tt-delta-flat');
-      small.innerHTML = `→ Sem alteração${pct == null ? '' : `<span class="tt-delta-percent">${percentText(0)} vs anterior</span>`}`;
+      small.innerHTML = `→ Sem alteração${pct == null ? '' : `<span class="tt-delta-percent">${percentText(0)} vs ${safe(reference)}</span>`}`;
     } else if (delta > 0) {
       small.classList.add('tt-delta-up');
-      small.innerHTML = `↑ ${absolute}${pct == null ? '' : `<span class="tt-delta-percent">${percentText(pct)} vs anterior</span>`}`;
+      small.innerHTML = `↑ ${safe(absolute)}${pct == null ? '' : `<span class="tt-delta-percent">${percentText(pct)} vs ${safe(reference)}</span>`}`;
     } else {
       small.classList.add('tt-delta-down');
-      small.innerHTML = `↓ ${absolute}${pct == null ? '' : `<span class="tt-delta-percent">${percentText(pct)} vs anterior</span>`}`;
+      small.innerHTML = `↓ ${safe(absolute)}${pct == null ? '' : `<span class="tt-delta-percent">${percentText(pct)} vs ${safe(reference)}</span>`}`;
     }
     small.dataset.deltaEnhanced = '1';
   });
