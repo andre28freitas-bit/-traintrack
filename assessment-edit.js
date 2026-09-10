@@ -53,12 +53,17 @@ async function refreshStudentWithoutReload(studentId, tab='assessments'){
 async function injectAssessmentManager(studentId){
   const body=document.querySelector('#studentBody');
   if(!body || document.querySelector('.tt-assessment-manage')) return;
-  const {data:list,error}=await db.from('traintrack_assessments').select('*').eq('student_id',studentId).order('assessment_date',{ascending:false});
+  const {data:list,error}=await db.from('traintrack_assessments').select('*').eq('student_id',studentId).order('assessment_date',{ascending:false}).order('created_at',{ascending:false});
   if(error) return console.warn(error);
-  if(!list?.length) return;
+  const ordered=[...(list||[])].sort((a,b)=>{
+    const byDate=String(b.assessment_date||'').localeCompare(String(a.assessment_date||''));
+    if(byDate) return byDate;
+    return String(b.created_at||'').localeCompare(String(a.created_at||''));
+  });
+  if(!ordered.length) return;
   const box=document.createElement('section');
   box.className='tt-assessment-manage';
-  box.innerHTML=`<div class="section-head"><div><h2>Gestão das avaliações</h2><p>Corrige uma avaliação já submetida ou exporta-a.</p></div></div><div class="manage-list">${list.map(a=>`<div class="manage-row"><div><strong>${fmtDate(a.assessment_date)}</strong><div class="manage-meta">${Object.keys(a.values||{}).filter(k=>a.values?.[k]!==''&&a.values?.[k]!=null).length} resultados · ${Object.keys(a.body_metrics||{}).length} medidas · ${(a.photo_paths||[]).length} foto(s)</div></div><div class="actions"><button class="secondary" onclick="ttEditAssessment('${a.id}')">Editar</button><button class="secondary" onclick="ttExportReport('${studentId}','${a.id}')">PDF</button><button class="danger" onclick="ttDeleteAssessment('${a.id}','${studentId}')">Eliminar</button></div></div>`).join('')}</div>`;
+  box.innerHTML=`<div class="section-head"><div><h2>Gestão das avaliações</h2><p>Da mais recente para a mais antiga. Corrige uma avaliação já submetida ou exporta-a.</p></div></div><div class="manage-list">${ordered.map(a=>`<div class="manage-row"><div><strong>${fmtDate(a.assessment_date)}</strong><div class="manage-meta">${Object.keys(a.values||{}).filter(k=>a.values?.[k]!==''&&a.values?.[k]!=null).length} resultados · ${Object.keys(a.body_metrics||{}).length} medidas · ${(a.photo_paths||[]).length} foto(s)</div></div><div class="actions"><button class="secondary" onclick="ttEditAssessment('${a.id}')">Editar</button><button class="secondary" onclick="ttExportReport('${studentId}','${a.id}')">PDF</button><button class="danger" onclick="ttDeleteAssessment('${a.id}','${studentId}')">Eliminar</button></div></div>`).join('')}</div>`;
   body.prepend(box);
 }
 
