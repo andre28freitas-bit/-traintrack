@@ -29,3 +29,5 @@ https://traintrack-c18.pages.dev
 
 ## Security
 The browser only receives the Supabase publishable key. Row Level Security isolates each authenticated PT's rows. Never place a `service_role` key in frontend code.
+
+Integrated frontend version: v2.
