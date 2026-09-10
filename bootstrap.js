@@ -2,14 +2,14 @@
   'use strict';
 
   const SUPABASE_SOURCES = [
-    'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.116.0/dist/umd/supabase.min.js',
-    'https://unpkg.com/@supabase/supabase-js@2.116.0/dist/umd/supabase.min.js'
+    'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2',
+    'https://unpkg.com/@supabase/supabase-js@2'
   ];
 
   const loadScript = (src) => new Promise((resolve, reject) => {
     const script = document.createElement('script');
     script.src = src;
-    script.defer = false;
+    script.async = false;
     script.onload = () => resolve(src);
     script.onerror = () => {
       script.remove();
@@ -26,6 +26,7 @@
 
   const start = async () => {
     let loaded = false;
+
     for (const src of SUPABASE_SOURCES) {
       try {
         await loadScript(src);
