@@ -27,6 +27,7 @@ function printStyles(){
   .profile-title h2{font-size:18px!important}
   #studentBody{padding:0!important}
   .tt-progress-v2{margin:0!important}
+  .tt-progress-hero{display:none!important}
   .tt-score-hero{padding:14px!important;border-radius:14px!important;box-shadow:none!important}
   .tt-score-head h2{font-size:20px!important}
   .tt-score-head button,.tt-score-head .primary{display:none!important}
@@ -81,6 +82,10 @@ function buildSnapshot(){
   const profileClone=profile?.cloneNode(true);
   profileClone?.querySelector('.actions')?.remove();
 
+  bodyClone.querySelectorAll('.tt-progress-hero').forEach(x=>x.remove());
+  const scorecards=[...bodyClone.querySelectorAll('.tt-score-hero')];
+  scorecards.slice(1).forEach(x=>x.remove());
+
   const compare=bodyClone.querySelector('.tt-compare-control');
   if(compare){
     const select=compare.querySelector('select');
@@ -89,6 +94,10 @@ function buildSnapshot(){
   }
   bodyClone.querySelectorAll('button').forEach(x=>x.remove());
   bodyClone.querySelectorAll('.notice').forEach(x=>x.remove());
+  bodyClone.innerHTML=bodyClone.innerHTML
+    .replace(/avaliaçãoões/g,'avaliações')
+    .replace(/avaliaçoes/gi,'avaliações')
+    .replace(/avaliacoes/gi,'avaliações');
   return {body:bodyClone.outerHTML,profile:profileClone?.outerHTML||''};
 }
 
