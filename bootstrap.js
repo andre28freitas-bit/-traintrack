@@ -52,6 +52,7 @@
         './assessment-edit.js',
         './templates-progress-v2.js',
         './score-ui-patch.js',
+        './summary-delta-ui.js',
         './calendar-nav-v2.js'
       ]) {
         await loadScript(src);
