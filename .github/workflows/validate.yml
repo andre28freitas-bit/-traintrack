@@ -17,7 +17,13 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Validate JavaScript syntax
-        run: node --check app.js
+        run: |
+          node --check bootstrap.js
+          node --check auth-redirect.js
+          node --check app.js
+          node --check extensions-core.js
+          node --check extensions-calendar.js
+          node --check sw.js
 
       - name: Validate manifest JSON
         run: node -e "JSON.parse(require('fs').readFileSync('manifest.json','utf8')); console.log('manifest ok')"
@@ -25,11 +31,20 @@ jobs:
       - name: Ensure TrainTrack uses isolated application tables
         shell: bash
         run: |
-          if grep -E "from\('(clients|appointments|salons|salon_members|services|visits|products|stock_movements)'\)" app.js; then
+          if grep -RE "from\('(clients|appointments|salons|salon_members|services|visits|products|stock_movements)'\)" --include='*.js' .; then
             echo "Found a reference to non-TrainTrack application tables"
             exit 1
           fi
-          grep -q "traintrack_students" app.js
-          grep -q "traintrack_assessments" app.js
-          grep -q "traintrack_workouts" app.js
-          grep -q "traintrack_events" app.js
+          grep -Rq "traintrack_students" --include='*.js' .
+          grep -Rq "traintrack_assessments" --include='*.js' .
+          grep -Rq "traintrack_workouts" --include='*.js' .
+          grep -Rq "traintrack_events" --include='*.js' .
+
+      - name: Ensure media storage stays isolated
+        shell: bash
+        run: |
+          grep -q "traintrack-media" extensions-core.js
+          if grep -R "oficina-fotos" --include='*.js' .; then
+            echo "Found workshop storage reference in TrainTrack"
+            exit 1
+          fi
