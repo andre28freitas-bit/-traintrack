@@ -38,6 +38,18 @@ async function signed(path){
 }
 function num(v){ return v==='' || v==null ? null : Number(v); }
 
+async function refreshStudentWithoutReload(studentId, tab='assessments'){
+  try{
+    const {error}=await db.auth.refreshSession();
+    if(error) throw error;
+    await new Promise(resolve=>setTimeout(resolve,250));
+  }catch(error){
+    console.warn('TrainTrack soft refresh:', error?.message || error);
+  }
+  currentStudentId=studentId;
+  window.openStudent?.(studentId,tab);
+}
+
 async function injectAssessmentManager(studentId){
   const body=document.querySelector('#studentBody');
   if(!body || document.querySelector('.tt-assessment-manage')) return;
@@ -72,7 +84,7 @@ window.ttEditAssessment = async function(assessmentId){
     ]);
     if(aErr) throw aErr; if(tErr) throw tErr;
     const photoHtml=[];
-    for(const [i,p] of (a.photo_paths||[]).entries()){
+    for(const p of (a.photo_paths||[])){
       try{ photoHtml.push(`<div class="tt-photo-item"><img src="${await signed(p)}" alt="Fotografia da avaliação"><label><input type="checkbox" name="remove_photo" value="${esc(p)}"> remover</label></div>`); }catch{}
     }
     modal(`<div class="modal-head"><h2>Editar avaliação</h2><button class="icon-btn" onclick="closeModal()">×</button></div><form onsubmit="ttSaveAssessmentEdit(event,'${assessmentId}')"><div class="form-grid"><div class="field"><label>Data</label><input type="date" name="assessment_date" value="${esc(a.assessment_date)}" required></div><div class="field"><label>Aluno</label><input value="${esc(document.querySelector('.profile-title h2')?.textContent||'Aluno')}" disabled></div>${(tests||[]).map(t=>`<div class="field"><label>${t.sort_order}. ${esc(t.name)} · ${esc(t.unit||'')}</label><input name="test_${t.id}" value="${esc(a.values?.[t.id]??'')}"></div>`).join('')}<div class="field full"><div class="form-section"><strong>Medidas corporais</strong><span>Podes corrigir qualquer valor.</span></div><div class="measure-input-grid">${metrics.map(([k,l,u])=>`<div class="field"><label>${l} (${u})</label><input name="metric_${k}" type="number" min="0" step="0.1" value="${esc(a.body_metrics?.[k]??'')}"></div>`).join('')}</div></div><div class="field full"><label>Notas</label><textarea name="notes">${esc(a.notes||'')}</textarea></div>${photoHtml.length?`<div class="field full"><label>Fotografias atuais</label><div class="tt-photo-list">${photoHtml.join('')}</div></div>`:''}<div class="field full"><label>Adicionar fotografias <span class="optional">opcional</span></label><div class="media-actions"><label class="secondary file-button">Carregar fotos<input hidden type="file" name="new_photos" accept="image/*" multiple></label><label class="secondary file-button">Abrir câmara<input hidden type="file" name="new_camera" accept="image/*" capture="environment"></label></div></div></div><div class="form-actions tt-edit-actions"><button type="button" class="danger" onclick="ttDeleteAssessment('${assessmentId}','${a.student_id}')">Eliminar avaliação</button><button type="button" class="secondary" onclick="closeModal()">Cancelar</button><button class="primary">Guardar alterações</button></div></form>`);
@@ -100,10 +112,8 @@ window.ttSaveAssessmentEdit = async function(e,assessmentId){
     for(const p of removePaths){ await db.storage.from(BUCKET).remove([p]).catch(()=>{}); }
     if(Number.isFinite(body_metrics.weight_kg)) await db.from('traintrack_students').update({weight_kg:body_metrics.weight_kg}).eq('id',current.student_id);
     close();
-    sessionStorage.setItem('tt_restore_student',current.student_id);
-    sessionStorage.setItem('tt_restore_tab','assessments');
     toast('Avaliação atualizada.');
-    setTimeout(()=>location.reload(),300);
+    await refreshStudentWithoutReload(current.student_id,'assessments');
   }catch(err){ toast(err.message||'Erro ao atualizar avaliação.',true); }
 };
 
@@ -116,10 +126,8 @@ window.ttDeleteAssessment = async function(assessmentId,studentId){
     if(error) throw error;
     if(a?.photo_paths?.length) await db.storage.from(BUCKET).remove(a.photo_paths).catch(()=>{});
     close();
-    sessionStorage.setItem('tt_restore_student',studentId);
-    sessionStorage.setItem('tt_restore_tab','assessments');
     toast('Avaliação eliminada.');
-    setTimeout(()=>location.reload(),300);
+    await refreshStudentWithoutReload(studentId,'assessments');
   }catch(err){ toast(err.message||'Erro ao eliminar avaliação.',true); }
 };
 
