@@ -6,6 +6,7 @@ style.textContent = `
 .tt-highlight small.tt-delta-up{color:#15803d;font-weight:800}
 .tt-highlight small.tt-delta-down{color:#b91c1c;font-weight:800}
 .tt-highlight small.tt-delta-flat{color:#64748b;font-weight:750}
+.tt-highlight small .tt-delta-percent{display:block;margin-top:2px;font-size:9px;font-weight:700;opacity:.82}
 `;
 document.head.appendChild(style);
 
@@ -42,17 +43,18 @@ function decorateSummaryCards(){
     const previous = current - delta;
     const pct = Math.abs(previous) > 1e-9 ? (delta / Math.abs(previous)) * 100 : null;
     const isFlat = Math.abs(delta) < 1e-9;
+    const absolute = original.replace(/\s+vs anterior$/i,'');
 
     small.classList.remove('tt-delta-up','tt-delta-down','tt-delta-flat');
     if (isFlat) {
       small.classList.add('tt-delta-flat');
-      small.textContent = `→ Sem alteração${pct == null ? '' : ` · ${percentText(0)}`}`;
+      small.innerHTML = `→ Sem alteração${pct == null ? '' : `<span class="tt-delta-percent">${percentText(0)} vs anterior</span>`}`;
     } else if (delta > 0) {
       small.classList.add('tt-delta-up');
-      small.textContent = `↑ ${original.replace(/\s+vs anterior$/i,'')}${pct == null ? '' : ` · ${percentText(pct)}`} vs anterior`;
+      small.innerHTML = `↑ ${absolute}${pct == null ? '' : `<span class="tt-delta-percent">${percentText(pct)} vs anterior</span>`}`;
     } else {
       small.classList.add('tt-delta-down');
-      small.textContent = `↓ ${original.replace(/\s+vs anterior$/i,'')}${pct == null ? '' : ` · ${percentText(pct)}`} vs anterior`;
+      small.innerHTML = `↓ ${absolute}${pct == null ? '' : `<span class="tt-delta-percent">${percentText(pct)} vs anterior</span>`}`;
     }
     small.dataset.deltaEnhanced = '1';
   });
