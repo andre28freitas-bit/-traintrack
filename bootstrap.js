@@ -56,7 +56,8 @@
         './summary-delta-ui.js',
         './print-report.js',
         './calendar-nav-v2.js',
-        './calendar-event-edit.js'
+        './calendar-event-edit.js',
+        './dashboard-home-ui.js'
       ]) {
         await loadScript(src);
       }
