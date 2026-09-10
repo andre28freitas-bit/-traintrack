@@ -32,6 +32,7 @@ jobs:
           node --check print-report.js
           node --check calendar-nav-v2.js
           node --check calendar-event-edit.js
+          node --check dashboard-home-ui.js
           node --check sw.js
 
       - name: Validate manifest JSON
@@ -72,6 +73,7 @@ jobs:
           grep -q "templates-progress-v2.js" bootstrap.js
           grep -q "calendar-nav-v2.js" bootstrap.js
           grep -q "calendar-event-edit.js" bootstrap.js
+          grep -q "dashboard-home-ui.js" bootstrap.js
           grep -q "score-model.js" bootstrap.js
           grep -q "score-ui-patch.js" bootstrap.js
           grep -q "progress-comparison.js" bootstrap.js
@@ -85,6 +87,8 @@ jobs:
           grep -q "ttDeleteCalendarEvent" calendar-event-edit.js
           grep -q "series_key" calendar-event-edit.js
           grep -q "recurrence_exceptions" calendar-event-edit.js
+          grep -q "grid-template-columns:repeat(2" dashboard-home-ui.js
+          grep -q "Próximos 30 dias" dashboard-home-ui.js
           grep -q "weightEach: 1 / 3" score-model.js
           grep -q "ttCompareProgress" progress-comparison.js
           grep -q "data-reference" progress-comparison.js
