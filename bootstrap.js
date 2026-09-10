@@ -47,6 +47,7 @@
         './auth-redirect.js',
         './app.js',
         './extensions-core.js',
+        './score-model.js',
         './extensions-calendar.js',
         './assessment-edit.js',
         './templates-progress-v2.js',
