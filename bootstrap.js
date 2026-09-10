@@ -51,6 +51,7 @@
         './extensions-calendar.js',
         './assessment-edit.js',
         './templates-progress-v2.js',
+        './score-ui-patch.js',
         './calendar-nav-v2.js'
       ]) {
         await loadScript(src);
