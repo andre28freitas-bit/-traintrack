@@ -1,5 +1,5 @@
-const CACHE = "traintrack-market-v5";
-const APP_SHELL = ["./","./index.html","./styles.css","./app.js","./config.js","./manifest.json","./icon.svg"];
+const CACHE = "traintrack-market-v6";
+const APP_SHELL = ["./","./index.html","./styles.css","./app.js","./config.js","./auth-redirect.js","./manifest.json","./icon.svg"];
 
 self.addEventListener("install", event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(APP_SHELL)));
