@@ -24,6 +24,8 @@ jobs:
           node --check extensions-core.js
           node --check extensions-calendar.js
           node --check assessment-edit.js
+          node --check templates-progress-v2.js
+          node --check calendar-nav-v2.js
           node --check sw.js
 
       - name: Validate manifest JSON
@@ -40,6 +42,7 @@ jobs:
           grep -Rq "traintrack_assessments" --include='*.js' .
           grep -Rq "traintrack_workouts" --include='*.js' .
           grep -Rq "traintrack_events" --include='*.js' .
+          grep -Rq "traintrack_assessment_templates" --include='*.js' .
 
       - name: Ensure media storage stays isolated
         shell: bash
@@ -56,3 +59,12 @@ jobs:
           grep -q "ttEditAssessment" assessment-edit.js
           grep -q "ttDeleteAssessment" assessment-edit.js
           grep -q "ttExportReport" assessment-edit.js
+
+      - name: Ensure new UX modules are wired
+        shell: bash
+        run: |
+          grep -q "templates-progress-v2.js" bootstrap.js
+          grep -q "calendar-nav-v2.js" bootstrap.js
+          grep -q "ttTemplateModal" templates-progress-v2.js
+          grep -q "ttCalNext" calendar-nav-v2.js
+          grep -q "ttCalView" calendar-nav-v2.js
