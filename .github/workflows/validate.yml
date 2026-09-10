@@ -1,0 +1,35 @@
+name: Validate TrainTrack
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate JavaScript syntax
+        run: node --check app.js
+
+      - name: Validate manifest JSON
+        run: node -e "JSON.parse(require('fs').readFileSync('manifest.json','utf8')); console.log('manifest ok')"
+
+      - name: Ensure TrainTrack uses isolated application tables
+        shell: bash
+        run: |
+          if grep -E "from\('(clients|appointments|salons|salon_members|services|visits|products|stock_movements)'\)" app.js; then
+            echo "Found a reference to non-TrainTrack application tables"
+            exit 1
+          fi
+          grep -q "traintrack_students" app.js
+          grep -q "traintrack_assessments" app.js
+          grep -q "traintrack_workouts" app.js
+          grep -q "traintrack_events" app.js
