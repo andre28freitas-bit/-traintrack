@@ -3,7 +3,7 @@
   Referrer-Policy: strict-origin-when-cross-origin
   X-Frame-Options: DENY
   Permissions-Policy: camera=(), microphone=(), geolocation=()
-  Content-Security-Policy: default-src 'self'; script-src 'self' https://cdn.jsdelivr.net https://unpkg.com; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' https://dysqdeqqikyjrmqmtpsl.supabase.co wss://dysqdeqqikyjrmqmtpsl.supabase.co; font-src 'self' data:; manifest-src 'self'; worker-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' https://dysqdeqqikyjrmqmtpsl.supabase.co wss://dysqdeqqikyjrmqmtpsl.supabase.co; font-src 'self' data:; manifest-src 'self'; worker-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'
 
 /sw.js
   Cache-Control: no-cache
@@ -14,14 +14,11 @@
 /index.html
   Cache-Control: no-cache
 
-/bootstrap.js
-  Cache-Control: no-cache
-
 /auth-redirect.js
   Cache-Control: no-cache
 
 /app.js
-  Cache-Control: public, max-age=300
+  Cache-Control: no-cache
 
 /styles.css
   Cache-Control: public, max-age=300
