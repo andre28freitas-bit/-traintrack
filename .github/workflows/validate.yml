@@ -23,6 +23,7 @@ jobs:
           node --check app.js
           node --check extensions-core.js
           node --check extensions-calendar.js
+          node --check assessment-edit.js
           node --check sw.js
 
       - name: Validate manifest JSON
@@ -48,3 +49,10 @@ jobs:
             echo "Found workshop storage reference in TrainTrack"
             exit 1
           fi
+
+      - name: Ensure assessment management is present
+        shell: bash
+        run: |
+          grep -q "ttEditAssessment" assessment-edit.js
+          grep -q "ttDeleteAssessment" assessment-edit.js
+          grep -q "ttExportReport" assessment-edit.js
