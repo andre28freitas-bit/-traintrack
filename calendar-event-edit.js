@@ -28,21 +28,25 @@ window.ttEventScopeChanged=function(el){
     start.value=form.dataset.occStart||start.value;
     end.value=form.dataset.occEnd||end.value;
   }
-  const recurBlock=form.querySelector('.tt-edit-recurrence');
-  if(recurBlock)recurBlock.style.display=scope==='single'?'none':'';
+  form.querySelectorAll('.tt-edit-recurrence').forEach(block=>block.style.display=scope==='single'?'none':'flex');
 };
 
 window.ttOpenEvent=async function(eventId,occurrenceIso=''){
   try{
     const [evRes,studentsRes]=await Promise.all([
       db.from('traintrack_events').select('*').eq('id',eventId).single(),
-      db.from('traintrack_students').select('id,name').eq('archived',false).order('name')
+      db.from('traintrack_students').select('id,name').eq('archived',false).eq('client_status','active').order('name')
     ]);
     if(evRes.error)throw evRes.error;if(studentsRes.error)throw studentsRes.error;
     const ev=evRes.data,recurring=(ev.recurrence||'none')!=='none';
     const occStart=occurrenceIso?new Date(occurrenceIso):new Date(ev.starts_at),duration=new Date(ev.ends_at)-new Date(ev.starts_at),occEnd=new Date(occStart.getTime()+duration);
+    const studentOptions=[...(studentsRes.data||[])];
+    if(!studentOptions.some(s=>s.id===ev.student_id)){
+      const {data:current}=await db.from('traintrack_students').select('id,name').eq('id',ev.student_id).maybeSingle();
+      if(current)studentOptions.unshift(current);
+    }
     const scope=recurring?`<div class="tt-event-scope"><label>Aplicar alterações a</label><select name="scope" onchange="ttEventScopeChanged(this)"><option value="single">Só esta marcação</option><option value="following">Esta e as seguintes</option><option value="all">Toda a série</option></select><div class="tt-event-series-note">Série atual: ${esc(recurLabel(ev.recurrence))}${ev.recurrence_until?` · até ${esc(ev.recurrence_until)}`:' · sem data final'}</div></div>`:'';
-    modal(`<div class="modal-head"><div><h2>Editar marcação</h2>${recurring?`<div class="stat-note">Ocorrência de ${esc(localDate(occStart))}</div>`:''}</div><button class="icon-btn" onclick="closeModal()">×</button></div><form class="tt-event-edit-form" data-master-start="${esc(localDT(new Date(ev.starts_at)))}" data-master-end="${esc(localDT(new Date(ev.ends_at)))}" data-occ-start="${esc(localDT(occStart))}" data-occ-end="${esc(localDT(occEnd))}" onsubmit="ttSaveCalendarEventEdit(event,'${ev.id}','${esc(occStart.toISOString())}')">${scope}<div class="form-grid"><div class="field full"><label>Aluno</label><select name="student_id" required>${(studentsRes.data||[]).map(s=>`<option value="${s.id}" ${s.id===ev.student_id?'selected':''}>${esc(s.name)}</option>`).join('')}</select></div><div class="field"><label>Início</label><input type="datetime-local" name="starts_at" value="${esc(localDT(occStart))}" required></div><div class="field"><label>Fim</label><input type="datetime-local" name="ends_at" value="${esc(localDT(occEnd))}" required></div><div class="field"><label>Tipo</label><select name="event_type">${['Treino','Avaliação','Consulta','Outro'].map(v=>`<option ${v===ev.event_type?'selected':''}>${v}</option>`).join('')}</select></div><div class="field"><label>Local</label><input name="location" value="${esc(ev.location||'')}"></div><div class="field tt-edit-recurrence" style="${recurring?'display:none':''}"><label>Recorrência</label><select name="recurrence"><option value="none" ${ev.recurrence==='none'?'selected':''}>Não repetir</option><option value="weekly" ${ev.recurrence==='weekly'?'selected':''}>Semanalmente</option><option value="biweekly" ${ev.recurrence==='biweekly'?'selected':''}>Quinzenalmente</option><option value="monthly" ${ev.recurrence==='monthly'?'selected':''}>Mensalmente</option></select></div><div class="field tt-edit-recurrence" style="${recurring?'display:none':''}"><label>Repetir até <span class="optional">opcional</span></label><input type="date" name="recurrence_until" value="${esc(ev.recurrence_until||'')}"></div><div class="field full"><label>Notas</label><textarea name="notes">${esc(ev.notes||'')}</textarea></div></div><div class="form-actions"><button type="button" class="danger tt-event-delete" onclick="ttDeleteCalendarEvent('${ev.id}','${esc(occStart.toISOString())}',this.form.elements.scope?.value||'all')">Eliminar</button><button type="button" class="secondary" onclick="closeModal()">Cancelar</button><button class="primary">Guardar alterações</button></div></form>`);
+    modal(`<div class="modal-head"><div><h2>Editar marcação</h2>${recurring?`<div class="stat-note">Ocorrência de ${esc(localDate(occStart))}</div>`:''}</div><button class="icon-btn" onclick="closeModal()">×</button></div><form class="tt-event-edit-form" data-master-start="${esc(localDT(new Date(ev.starts_at)))}" data-master-end="${esc(localDT(new Date(ev.ends_at)))}" data-occ-start="${esc(localDT(occStart))}" data-occ-end="${esc(localDT(occEnd))}" onsubmit="ttSaveCalendarEventEdit(event,'${ev.id}','${esc(occStart.toISOString())}')">${scope}<div class="form-grid"><div class="field full"><label>Aluno</label><select name="student_id" required>${studentOptions.map(s=>`<option value="${s.id}" ${s.id===ev.student_id?'selected':''}>${esc(s.name)}</option>`).join('')}</select></div><div class="field"><label>Início</label><input type="datetime-local" name="starts_at" value="${esc(localDT(occStart))}" required></div><div class="field"><label>Fim</label><input type="datetime-local" name="ends_at" value="${esc(localDT(occEnd))}" required></div><div class="field"><label>Tipo</label><select name="event_type">${['Treino','Avaliação','Consulta','Outro'].map(v=>`<option ${v===ev.event_type?'selected':''}>${v}</option>`).join('')}</select></div><div class="field"><label>Local</label><input name="location" value="${esc(ev.location||'')}"></div><div class="field tt-edit-recurrence" style="${recurring?'display:none':''}"><label>Recorrência</label><select name="recurrence"><option value="none" ${ev.recurrence==='none'?'selected':''}>Não repetir</option><option value="weekly" ${ev.recurrence==='weekly'?'selected':''}>Semanalmente</option><option value="biweekly" ${ev.recurrence==='biweekly'?'selected':''}>Quinzenalmente</option><option value="monthly" ${ev.recurrence==='monthly'?'selected':''}>Mensalmente</option></select></div><div class="field tt-edit-recurrence" style="${recurring?'display:none':''}"><label>Repetir até <span class="optional">opcional</span></label><input type="date" name="recurrence_until" value="${esc(ev.recurrence_until||'')}"></div><div class="field full"><label>Notas</label><textarea name="notes">${esc(ev.notes||'')}</textarea></div></div><div class="form-actions"><button type="button" class="danger tt-event-delete" onclick="ttDeleteCalendarEvent('${ev.id}','${esc(occStart.toISOString())}',this.form.elements.scope?.value||'all')">Eliminar</button><button type="button" class="secondary" onclick="closeModal()">Cancelar</button><button class="primary">Guardar alterações</button></div></form>`);
   }catch(e){toast(e.message||'Não foi possível abrir a marcação.',true)}
 };
 
@@ -58,14 +62,14 @@ window.ttSaveCalendarEventEdit=async function(e,eventId,occurrenceIso){
       const {error}=await db.from('traintrack_events').update({...row,recurrence_exceptions:[]}).eq('id',eventId);if(error)throw error;
     }else if(scope==='single'){
       await addException(ev,occurrenceIso);
-      const {error}=await db.from('traintrack_events').insert({...row,recurrence:'none',recurrence_until:null,recurrence_exceptions:[]});if(error)throw error;
+      const {error}=await db.from('traintrack_events').insert({...row,series_key:ev.series_key,recurrence:'none',recurrence_until:null,recurrence_exceptions:[]});if(error)throw error;
     }else if(scope==='following'){
       if(sameInstant(occurrenceIso,ev.starts_at)){
         const {error}=await db.from('traintrack_events').update({...row,recurrence_exceptions:exceptions(ev)}).eq('id',eventId);if(error)throw error;
       }else{
         const cut=new Date(occurrenceIso).getTime(),oldEx=exceptions(ev).filter(x=>new Date(x).getTime()<cut),futureEx=recurrence===ev.recurrence?exceptions(ev).filter(x=>new Date(x).getTime()>=cut):[];
         const first=await db.from('traintrack_events').update({recurrence_until:previousLocalDate(occurrenceIso),recurrence_exceptions:oldEx}).eq('id',eventId);if(first.error)throw first.error;
-        const second=await db.from('traintrack_events').insert({...row,recurrence_exceptions:futureEx});if(second.error)throw second.error;
+        const second=await db.from('traintrack_events').insert({...row,series_key:ev.series_key,recurrence_exceptions:futureEx});if(second.error)throw second.error;
       }
     }else{
       const keepExceptions=recurrence===ev.recurrence?exceptions(ev):[];
@@ -80,8 +84,10 @@ window.ttDeleteCalendarEvent=async function(eventId,occurrenceIso,scope='all'){
   if(!confirm(text))return;
   try{
     const ev=await loadEvent(eventId),recurring=(ev.recurrence||'none')!=='none';
-    if(!recurring||scope==='all'){
+    if(!recurring){
       const {error}=await db.from('traintrack_events').delete().eq('id',eventId);if(error)throw error;
+    }else if(scope==='all'){
+      const {error}=await db.from('traintrack_events').delete().eq('series_key',ev.series_key);if(error)throw error;
     }else if(scope==='single'){
       await addException(ev,occurrenceIso);
     }else if(scope==='following'){
