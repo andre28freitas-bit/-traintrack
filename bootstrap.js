@@ -54,6 +54,7 @@
         './score-ui-patch.js',
         './progress-comparison.js',
         './summary-delta-ui.js',
+        './print-report.js',
         './calendar-nav-v2.js'
       ]) {
         await loadScript(src);
