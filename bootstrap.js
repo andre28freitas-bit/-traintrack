@@ -42,7 +42,7 @@
       return;
     }
     try {
-      for (const src of ['./config.js','./auth-redirect.js','./app.js','./extensions-core.js','./extensions-calendar.js']) {
+      for (const src of ['./config.js','./auth-redirect.js','./app.js','./extensions-core.js','./extensions-calendar.js','./assessment-edit.js']) {
         await loadScript(src);
       }
     } catch (error) {
