@@ -1,43 +1,31 @@
-# TrainTrack — Production MVP
+# TrainTrack
 
-PWA para Personal Trainers presenciais / ao domicílio.
+TrainTrack is a mobile-friendly PWA for personal trainers to manage students, physical assessments, workouts, scheduling and visual progress.
 
-## Backend atual
+## Current production stack
+- Cloudflare Pages
+- GitHub
+- Supabase Auth, PostgreSQL and Storage
+- TrainTrack data is isolated in `traintrack_*` tables and the private `traintrack-media` bucket.
 
-Esta build está ligada ao projeto Supabase partilhado existente, mas usa exclusivamente tabelas dedicadas:
+## Current features
+- Student profiles and contact details
+- Optional student profile photo by upload or camera
+- Physical assessments with editable raw test results
+- Weight and body measurements per assessment
+- Assessment photos by upload or camera
+- Edit and delete assessments with confirmation
+- Visual progression with line charts for tests and body measurements
+- Report / PDF print view with charts, comparison against the previous assessment and assessment photos
+- Overall/category score UI prepared but intentionally left blank until real scoring formulas are supplied
+- Workouts
+- Reassessment reminders
+- Weekly calendar
+- Recurring appointments: weekly, fortnightly or monthly
+- Universal `.ics` export for the PT calendar and sharing with the student
 
-- `traintrack_profiles`
-- `traintrack_students`
-- `traintrack_test_definitions`
-- `traintrack_assessments`
-- `traintrack_workouts`
-- `traintrack_events`
+## Production URL
+https://traintrack-c18.pages.dev
 
-As tabelas do salão (`salons`, `clients`, `appointments`, etc.) não são usadas pela TrainTrack. Todas as tabelas TrainTrack têm RLS e ownership por `auth.uid()`.
-
-## Funcionalidades
-
-- conta/login Supabase
-- alunos e contactos
-- idade automática e aniversários
-- email e WhatsApp diretos
-- frequência e lembrete de reavaliação por aluno
-- agenda
-- avaliações físicas em matriz por data
-- testes de força/cardio/etc. e valor ideal
-- registo de treinos
-- progressão visual
-- estrutura preparada para scores futuros
-- PWA instalável
-
-## Deployment
-
-É uma aplicação estática: publicar a raiz do repositório em HTTPS. O ficheiro `config.js` já contém apenas o Project URL e a publishable key, próprios para cliente web. Nunca adicionar uma `service_role`/secret key ao frontend.
-
-## Scores
-
-Os campos de score existem, mas a classificação permanece desligada até serem definidas as fórmulas/standards reais.
-
-## Base de dados
-
-`supabase/schema.sql` documenta a migration de isolamento. A migration já foi aplicada no projeto atual.
+## Security
+The browser only receives the Supabase publishable key. Row Level Security isolates each authenticated PT's rows. Never place a `service_role` key in frontend code.
