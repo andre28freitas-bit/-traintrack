@@ -84,11 +84,11 @@ function ageAt(birth,date){
 function ageBand(age){if(age>=20&&age<=29)return'20-29';if(age>=30&&age<=39)return'30-39';return null}
 function levelFromThresholds(value,thresholds){
   if(value==null||!thresholds)return null;
-  let idx=0;
+  let idx=-1;
   thresholds.forEach((t,i)=>{if(value>=t)idx=i});
-  return Math.max(0,Math.min(4,idx));
+  return Math.min(4,idx);
 }
-function scoreFromLevel(i){return [20,40,60,80,100][Math.max(0,Math.min(4,i))]}
+function scoreFromLevel(i){return i<0?0:[20,40,60,80,100][Math.min(4,i)]}
 
 async function ensureCatalog(){
   const {data:tests,error}=await db.from('traintrack_test_definitions').select('*').order('sort_order');
@@ -120,7 +120,7 @@ function strengthResult(value,key,student,assessment){
   if(!sex||!weight||!STRENGTH[sex]?.[key])return null;
   const ratio=value/weight;
   const idx=levelFromThresholds(ratio,STRENGTH[sex][key]);
-  return{score:scoreFromLevel(idx),label:LEVEL_LABELS[idx],detail:`${ratio.toFixed(2)}× peso corporal`};
+  return{score:scoreFromLevel(idx),label:idx<0?'Abaixo de principiante':LEVEL_LABELS[idx],detail:`${ratio.toFixed(2)}× peso corporal`};
 }
 function cooperResult(value,student,assessment){
   const sex=student?.reference_sex,age=ageAt(student?.birth_date,assessment?.assessment_date),band=ageBand(age);
@@ -147,16 +147,21 @@ function resultFor(test,value,student,assessment){
 
 function calcScores(assessment,student,tests,weights){
   const grouped={},details={};
+  let cardioPrimary=null,cardioFallback=null;
   for(const test of tests){
     const value=num(assessment?.values?.[test.id]);
     if(value==null)continue;
     const r=resultFor(test,value,student,assessment);
     if(!r)continue;
-    (grouped[test.category] ||= []).push(r.score);
     details[test.id]={name:test.name,category:test.category,...r};
+    if(test.scoring_key==='cooper'){cardioPrimary=r;continue}
+    if(test.scoring_key==='vo2'){cardioFallback=r;continue}
+    (grouped[test.category] ||= []).push(r.score);
   }
   const categories={};
   Object.entries(grouped).forEach(([k,a])=>categories[k]=a.reduce((s,v)=>s+v,0)/a.length);
+  const cardio=cardioPrimary||cardioFallback;
+  if(cardio)categories.Cardiovascular=cardio.score;
   const active=Object.entries(weights||{}).filter(([,w])=>num(w)>0);
   let overall=null;
   if(active.length&&active.every(([k])=>Number.isFinite(categories[k]))){
@@ -200,10 +205,11 @@ window.ttSaveOverallWeights=async e=>{
   catch(err){toast(err.message||'Fórmula guardada, mas houve erro ao recalcular.',true)}
 };
 
+function scoreableKey(key){return key==='cooper'||key==='vo2'||String(key||'').startsWith('strength_')}
 function catalogHTML(tests){
   const groups={};
   tests.forEach(t=>(groups[t.category] ||= []).push(t));
-  return Object.entries(groups).map(([cat,items])=>`<div class="tt-catalog-group"><h4>${esc(cat)}</h4>${items.map(t=>`<div class="tt-test-chip"><span>${esc(t.name)} <small>· ${esc(t.unit||'')}</small></span><span class="${t.scoring_key==='tracking'?'tt-track':'pill green'}">${t.scoring_key==='tracking'?'Tracking':'Com referência'}</span></div>`).join('')}</div>`).join('');
+  return Object.entries(groups).map(([cat,items])=>`<div class="tt-catalog-group"><h4>${esc(cat)}</h4>${items.map(t=>{const scored=scoreableKey(t.scoring_key);return `<div class="tt-test-chip"><span>${esc(t.name)} <small>· ${esc(t.unit||'')}</small></span><span class="${scored?'pill green':'tt-track'}">${scored?'Com referência':'Tracking'}</span></div>`}).join('')}</div>`).join('');
 }
 
 async function enhanceBO(force=false){
