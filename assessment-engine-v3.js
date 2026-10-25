@@ -328,7 +328,12 @@ async function apply(){
 }
 
 async function boot(){
-  try{await ensureCatalog();await recalcAll()}catch(e){console.warn('TrainTrack assessment setup:',e?.message||e)}
+  try{
+    await ensureCatalog();
+    if(typeof window.ttReloadData==='function') await window.ttReloadData();
+    await recalcAll();
+    if(typeof window.ttReloadData==='function') await window.ttReloadData();
+  }catch(e){console.warn('TrainTrack assessment setup:',e?.message||e)}
   apply();
 }
 const observer=new MutationObserver(()=>setTimeout(apply,40));
