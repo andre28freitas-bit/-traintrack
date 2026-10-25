@@ -98,6 +98,10 @@ jobs:
           grep -q "workoutGridBody" app.js
           grep -q "workoutExerciseOptions" app.js
           grep -q "ttNormalizeWorkoutSet" app.js
+          grep -q "ttWorkoutSuggest" app.js
+          grep -q "ttPickWorkoutExercise" app.js
+          grep -q "Workout sheet UX v31" extensions.css
+          grep -q "position:sticky!important" extensions.css
           grep -q "ttWorkoutCellKey" app.js
           grep -q "workout-scroll-hint" app.js
           grep -q "Mobile workout modal UX" extensions.css
