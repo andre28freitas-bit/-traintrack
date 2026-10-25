@@ -217,7 +217,7 @@ window.ttWorkoutCellKey=(event,input)=>{
   if(next)next.focus();
 };
 function workoutGridRow(index){
-  return `<tr data-workout-row><td class="workout-name-cell"><input name="exercise_name_${index}" list="workoutExerciseOptions" autocomplete="off" placeholder="Ex.: Supino"></td>${[1,2,3,4,5].map(s=>`<td><input name="exercise_${index}_set_${s}" inputmode="text" autocomplete="off" autocapitalize="off" placeholder="10×60" onblur="ttNormalizeWorkoutSet(this)" onkeydown="ttWorkoutCellKey(event,this)"></td>`).join('')}<td><button type="button" class="icon-btn workout-remove" onclick="ttRemoveWorkoutRow(this)" aria-label="Remover exercício">×</button></td></tr>`;
+  return `<tr data-workout-row><td class="workout-name-cell"><input name="exercise_name_${index}" list="workoutExerciseOptions" autocomplete="off" placeholder="Supino"></td>${[1,2,3,4,5].map(s=>`<td><input name="exercise_${index}_set_${s}" inputmode="text" autocomplete="off" autocapitalize="off" placeholder="10×60" onblur="ttNormalizeWorkoutSet(this)" onkeydown="ttWorkoutCellKey(event,this)"></td>`).join('')}<td><button type="button" class="icon-btn workout-remove" onclick="ttRemoveWorkoutRow(this)" aria-label="Remover exercício">×</button></td></tr>`;
 }
 window.ttAddWorkoutRow=()=>{
   const body=document.querySelector('#workoutGridBody');if(!body)return;
