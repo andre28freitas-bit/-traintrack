@@ -87,6 +87,7 @@ async function load(){
   S.data={profile,students:students||[],tests:tests||[],assessments:assessmentsRows||[],workouts:workoutsRows||[],events:events||[]};
 }
 async function refresh(){ try{ await load(); render(); }catch(e){ fail(e); } }
+window.ttReloadData=load;
 
 function authScreen(signup=false){
   $('#root').innerHTML=`<div class="auth-page"><section class="auth-brand"><div class="brand-mark">TT</div><h1>TrainTrack</h1><p>Avaliações físicas, treinos, agenda e progressão numa ferramenta simples para PTs presenciais.</p><div class="auth-feature"><div>✓ Alunos e contactos</div><div>✓ Reavaliações automáticas</div><div>✓ Treinos e agenda</div><div>✓ Progressão visual</div></div></section><section class="auth-panel"><form class="auth-box" onsubmit="submitAuth(event,${signup})"><h2>${signup?'Criar conta':'Entrar'}</h2><p>${signup?'Cria o teu acesso à TrainTrack.':'Acede aos teus alunos e avaliações.'}</p>${signup?'<div class="field"><label>Nome</label><input name="name" required autocomplete="name"></div>':''}<div class="field"><label>Email</label><input name="email" type="email" required autocomplete="email"></div><div class="field"><label>Password</label><input name="password" type="password" minlength="6" required></div><button class="primary">${signup?'Criar conta':'Entrar'}</button><div class="auth-divider">${signup?'Já tens conta?':'Ainda não tens conta?'}</div><button type="button" class="secondary" onclick="authScreen(${!signup})">${signup?'Voltar ao login':'Criar conta'}</button></form></section></div>`;
