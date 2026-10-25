@@ -11,18 +11,18 @@ const close=X.close||(()=>{});
 
 const SCORE_LEVELS={very_bad:20,bad:40,medium:60,good:80,excellent:100};
 const DEFAULT_TESTS=[
-  {name:'Supino',category:'Força',unit:'kg',scoring_key:'strength_bench'},
-  {name:'Agachamento',category:'Força',unit:'kg',scoring_key:'strength_squat'},
-  {name:'Levantamento Terra',category:'Força',unit:'kg',scoring_key:'strength_deadlift'},
-  {name:'Remada inclinada',category:'Força',unit:'kg',scoring_key:'tracking'},
-  {name:'Teste de Cooper',category:'Cardiovascular',unit:'m',scoring_key:'cooper'},
-  {name:'Teste BIP',category:'Cardiovascular',unit:'nível',scoring_key:'tracking'},
-  {name:'VO₂max estimado',category:'Cardiovascular',unit:'ml/kg/min',scoring_key:'vo2_derived'},
-  {name:'Clean & Press',category:'Exercícios integrados',unit:'kg',scoring_key:'tracking'},
-  {name:'Snatch',category:'Exercícios integrados',unit:'kg',scoring_key:'tracking'},
-  {name:'Flexões',category:'Calistenia',unit:'reps',scoring_key:'tracking'},
-  {name:'Afundos',category:'Calistenia',unit:'reps',scoring_key:'tracking'},
-  {name:'Elevações',category:'Calistenia',unit:'reps',scoring_key:'tracking'}
+  {name:'Supino',category:'Força',unit:'kg',scoring_key:'strength_bench',counts_for_score:true},
+  {name:'Agachamento',category:'Força',unit:'kg',scoring_key:'strength_squat',counts_for_score:true},
+  {name:'Levantamento Terra',category:'Força',unit:'kg',scoring_key:'strength_deadlift',counts_for_score:true},
+  {name:'Remada inclinada',category:'Força',unit:'kg',scoring_key:'tracking',counts_for_score:false},
+  {name:'Teste de Cooper',category:'Cardiovascular',unit:'m',scoring_key:'cooper',counts_for_score:true},
+  {name:'Teste BIP',category:'Cardiovascular',unit:'nível',scoring_key:'tracking',counts_for_score:false},
+  {name:'VO₂max estimado',category:'Cardiovascular',unit:'ml/kg/min',scoring_key:'vo2_derived',counts_for_score:false},
+  {name:'Clean & Press',category:'Exercícios integrados',unit:'kg',scoring_key:'tracking',counts_for_score:false},
+  {name:'Snatch',category:'Exercícios integrados',unit:'kg',scoring_key:'tracking',counts_for_score:false},
+  {name:'Flexões',category:'Calistenia',unit:'reps',scoring_key:'tracking',counts_for_score:false},
+  {name:'Afundos',category:'Calistenia',unit:'reps',scoring_key:'tracking',counts_for_score:false},
+  {name:'Elevações',category:'Calistenia',unit:'reps',scoring_key:'tracking',counts_for_score:false}
 ];
 
 const STRENGTH={
@@ -108,6 +108,7 @@ async function ensureCatalog(){
       if(existing.category!==def.category)patch.category=def.category;
       if(!existing.unit)patch.unit=def.unit;
       if(existing.scoring_key!==def.scoring_key)patch.scoring_key=def.scoring_key;
+      if(existing.counts_for_score==null)patch.counts_for_score=!!def.counts_for_score;
       if(Object.keys(patch).length){
         const r=await db.from('traintrack_test_definitions').update(patch).eq('id',existing.id);
         if(r.error)throw r.error;
@@ -169,6 +170,7 @@ function calcScores(assessment,student,tests,weights){
     const r=resultFor(test,value,student,assessment);
     if(!r)continue;
     details[test.id]={name:test.name,category:test.category,...r};
+    if(!test.counts_for_score)continue;
     if(test.scoring_key==='cooper'){cardioPrimary=r;continue}
     if(test.scoring_key==='vo2_derived'){cardioFallback=r;continue}
     (grouped[test.category] ||= []).push(r.score);
@@ -222,10 +224,17 @@ window.ttSaveOverallWeights=async e=>{
 };
 
 function scoreableKey(key){return key==='cooper'||key==='vo2_derived'||String(key||'').startsWith('strength_')}
+window.ttSetTestScoreMode=async(id,value)=>{
+  const counts=value==='score';
+  const {error}=await db.from('traintrack_test_definitions').update({counts_for_score:counts}).eq('id',id);
+  if(error)return toast(error.message,true);
+  try{await recalcAll();toast(counts?'Exercício passa a contar para avaliação.':'Exercício definido como só tracking.');await enhanceBO(true)}
+  catch(e){toast(e.message||'Modo guardado, mas houve erro ao recalcular.',true)}
+};
 function catalogHTML(tests){
   const groups={};
   tests.forEach(t=>(groups[t.category] ||= []).push(t));
-  return Object.entries(groups).map(([cat,items])=>`<div class="tt-catalog-group"><h4>${esc(cat)}</h4>${items.map(t=>{const scored=scoreableKey(t.scoring_key);return `<div class="tt-test-chip"><span>${esc(t.name)} <small>· ${esc(t.unit||'')}</small></span><span class="${scored?'pill green':'tt-track'}">${scored?'Com referência':'Tracking'}</span></div>`}).join('')}</div>`).join('');
+  return Object.entries(groups).map(([cat,items])=>`<div class="tt-catalog-group"><h4>${esc(cat)}</h4>${items.map(t=>{const ref=scoreableKey(t.scoring_key);return `<div class="tt-test-chip"><div><strong>${esc(t.name)}</strong><small> · ${esc(t.unit||'')}</small><div class="tt-track">${ref?'Referência automática disponível':'Sem referência automática'}</div></div><select aria-label="Modo de ${esc(t.name)}" onchange="ttSetTestScoreMode('${t.id}',this.value)"><option value="score" ${t.counts_for_score?'selected':''}>Avaliação + tracking</option><option value="tracking" ${!t.counts_for_score?'selected':''}>Só tracking</option></select></div>`}).join('')}</div>`).join('');
 }
 
 async function enhanceBO(force=false){
