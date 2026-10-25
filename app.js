@@ -200,11 +200,55 @@ window.saveTest=async e=>{e.preventDefault();const f=new FormData(e.target);try{
 window.assessmentModal=(id='')=>modal(`<div class="modal-head"><h2>Nova avaliação física</h2><button class="icon-btn" onclick="closeModal()">×</button></div><form onsubmit="saveAssessment(event)"><div class="form-grid"><div class="field"><label>Aluno</label><select name="student_id" required><option value="">Selecionar…</option>${opts(id)}</select></div><div class="field"><label>Data</label><input type="date" name="assessment_date" value="${today()}" required></div>${S.data.tests.map(t=>t.scoring_key==='vo2_derived'?`<div class="field"><label>${t.sort_order}. ${esc(t.name)}</label><input name="test_${t.id}" readonly placeholder="Calculado automaticamente pelo Cooper"><div class="stat-note">Calculado a partir da distância do Cooper.</div></div>`:`<div class="field"><label>${t.sort_order}. ${esc(t.name)} ${t.ideal_value?`· ideal ${esc(t.ideal_value)} ${esc(t.unit||'')}`:''}</label><input name="test_${t.id}" placeholder="${esc(t.unit||'valor')}" ${t.scoring_key==='cooper'?'oninput="ttUpdateDerivedVO2(this.form)"':''}></div>`).join('')}<div class="field full"><label>Notas</label><textarea name="notes"></textarea></div></div><div class="form-actions"><button type="button" class="secondary" onclick="closeModal()">Cancelar</button><button class="primary">Guardar avaliação</button></div></form>`);
 window.saveAssessment=async e=>{e.preventDefault();ttUpdateDerivedVO2(e.target);const f=new FormData(e.target),values={};S.data.tests.forEach(t=>values[t.id]=String(f.get(`test_${t.id}`)||'').trim());const cooper=S.data.tests.find(t=>t.scoring_key==='cooper'),vo2=S.data.tests.find(t=>t.scoring_key==='vo2_derived');if(cooper&&vo2){const x=cooperVO2(values[cooper.id]);values[vo2.id]=x==null?'':x.toFixed(1);}const row={student_id:f.get('student_id'),assessment_date:f.get('assessment_date'),values,scores:{},notes:f.get('notes').trim()};try{const r=await sb.from('traintrack_assessments').insert(row);if(r.error)throw r.error;closeModal();S.studentId=row.student_id;S.view='student';S.tab='assessments';await refresh();toast('Avaliação guardada.');}catch(err){fail(err);}};
 
-function workoutExerciseOptions(){
-  const names=[...new Set((S.data?.tests||[]).map(t=>String(t.name||'').trim()).filter(Boolean))]
+function workoutExerciseNames(){
+  return [...new Set((S.data?.tests||[]).map(t=>String(t.name||'').trim()).filter(Boolean))]
     .sort((a,b)=>a.localeCompare(b,'pt'));
-  return names.map(name=>`<option value="${esc(name)}"></option>`).join('');
 }
+function workoutExerciseOptions(){
+  return workoutExerciseNames().map(name=>`<option value="${esc(name)}"></option>`).join('');
+}
+window.ttCloseWorkoutSuggestions=()=>{
+  document.querySelector('#ttWorkoutSuggestions')?.remove();
+};
+window.ttPickWorkoutExercise=(inputId,encodedName)=>{
+  const input=document.getElementById(inputId);
+  if(!input)return;
+  input.value=decodeURIComponent(encodedName);
+  ttCloseWorkoutSuggestions();
+  input.focus();
+};
+window.ttWorkoutSuggest=input=>{
+  if(!input)return;
+  const q=String(input.value||'').trim().toLocaleLowerCase('pt-PT');
+  ttCloseWorkoutSuggestions();
+  if(!q)return;
+  const names=workoutExerciseNames();
+  const matches=names
+    .filter(name=>name.toLocaleLowerCase('pt-PT').includes(q))
+    .sort((a,b)=>{
+      const al=a.toLocaleLowerCase('pt-PT'),bl=b.toLocaleLowerCase('pt-PT');
+      const ap=al.startsWith(q)?0:1,bp=bl.startsWith(q)?0:1;
+      return ap-bp||a.localeCompare(b,'pt');
+    })
+    .slice(0,7);
+  if(!matches.length)return;
+  const r=input.getBoundingClientRect();
+  const popup=document.createElement('div');
+  popup.id='ttWorkoutSuggestions';
+  popup.className='workout-autocomplete';
+  popup.style.left=`${Math.max(8,Math.min(r.left,window.innerWidth-248))}px`;
+  popup.style.top=`${Math.min(r.bottom+5,window.innerHeight-220)}px`;
+  popup.style.width=`${Math.max(220,Math.min(280,window.innerWidth-16))}px`;
+  popup.innerHTML=matches.map(name=>`<button type="button" onpointerdown="event.preventDefault();ttPickWorkoutExercise('${input.id}','${encodeURIComponent(name)}')"><strong>${esc(name)}</strong><span>${esc((S.data?.tests||[]).find(t=>t.name===name)?.category||'Exercício')}</span></button>`).join('');
+  document.body.appendChild(popup);
+};
+window.ttWorkoutNameKey=(event,input)=>{
+  if(event.key==='Escape')ttCloseWorkoutSuggestions();
+  if(event.key==='Enter'&&document.querySelector('#ttWorkoutSuggestions')){
+    const first=document.querySelector('#ttWorkoutSuggestions button');
+    if(first){event.preventDefault();first.dispatchEvent(new PointerEvent('pointerdown',{bubbles:true}));}
+  }
+};
 window.ttNormalizeWorkoutSet=input=>{
   input.value=String(input.value||'').trim().replace(/\s*[xX*]\s*/g,'×');
 };
@@ -217,7 +261,8 @@ window.ttWorkoutCellKey=(event,input)=>{
   if(next)next.focus();
 };
 function workoutGridRow(index){
-  return `<tr data-workout-row><td class="workout-name-cell"><input name="exercise_name_${index}" list="workoutExerciseOptions" autocomplete="off" placeholder="Supino"></td>${[1,2,3,4,5].map(s=>`<td><input name="exercise_${index}_set_${s}" inputmode="text" autocomplete="off" autocapitalize="off" placeholder="10×60" onblur="ttNormalizeWorkoutSet(this)" onkeydown="ttWorkoutCellKey(event,this)"></td>`).join('')}<td><button type="button" class="icon-btn workout-remove" onclick="ttRemoveWorkoutRow(this)" aria-label="Remover exercício">×</button></td></tr>`;
+  const inputId=`workoutExercise_${index}`;
+  return `<tr data-workout-row><td class="workout-name-cell"><input id="${inputId}" name="exercise_name_${index}" autocomplete="off" autocapitalize="words" placeholder="Ex.: Supino" oninput="ttWorkoutSuggest(this)" onfocus="ttWorkoutSuggest(this)" onkeydown="ttWorkoutNameKey(event,this)" onblur="setTimeout(ttCloseWorkoutSuggestions,140)"></td>${[1,2,3,4,5].map(s=>`<td><input name="exercise_${index}_set_${s}" inputmode="text" autocomplete="off" autocapitalize="off" placeholder="10×60" onblur="ttNormalizeWorkoutSet(this)" onkeydown="ttWorkoutCellKey(event,this)"></td>`).join('')}<td><button type="button" class="icon-btn workout-remove" onclick="ttRemoveWorkoutRow(this)" aria-label="Remover exercício">×</button></td></tr>`;
 }
 window.ttAddWorkoutRow=()=>{
   const body=document.querySelector('#workoutGridBody');if(!body)return;
@@ -240,7 +285,7 @@ function parseWorkoutSet(raw){
   const parts=display.split(/\s*[×xX*]\s*/);
   return {display,reps:(parts[0]||'').trim(),load:(parts.slice(1).join('×')||'').trim()};
 }
-window.workoutModal=(id='')=>modal(`<div class="modal-head"><h2>Registar treino</h2><button class="icon-btn" onclick="closeModal()">×</button></div><form class="workout-form" onsubmit="saveWorkout(event)"><div class="form-grid"><div class="field full workout-student"><label>Aluno</label><select name="student_id" required><option value="">Selecionar…</option>${opts(id)}</select></div><div class="field workout-date"><label>Data</label><input type="date" name="workout_date" value="${today()}" required></div><div class="field workout-duration"><label>Duração (min)</label><input type="number" name="duration_min" value="60"></div><div class="field full workout-type"><label>Tipo</label><input name="workout_type" placeholder="Ex.: Upper Body" required></div><div class="field full workout-sheet-field"><label>Exercícios e séries</label><div class="workout-help">Cada célula: <strong>reps × carga</strong> · Ex.: <strong>10×60</strong> ou <strong>12×PC</strong>.</div><div class="workout-scroll-hint">Desliza para ver as séries 3–5 →</div><datalist id="workoutExerciseOptions">${workoutExerciseOptions()}</datalist><div class="workout-grid-wrap"><table class="workout-grid"><thead><tr><th>Exercício</th><th>Série 1</th><th>Série 2</th><th>Série 3</th><th>Série 4</th><th>Série 5</th><th></th></tr></thead><tbody id="workoutGridBody" data-next-index="4">${[0,1,2,3].map(workoutGridRow).join('')}</tbody></table></div><button type="button" class="secondary workout-add-row" onclick="ttAddWorkoutRow()">+ Exercício</button></div><div class="field full workout-notes"><label>Observações</label><textarea name="notes"></textarea></div></div><div class="form-actions workout-actions"><button type="button" class="secondary" onclick="closeModal()">Cancelar</button><button class="primary">Guardar treino</button></div></form>`);
+window.workoutModal=(id='')=>modal(`<div class="modal-head"><h2>Registar treino</h2><button class="icon-btn" onclick="closeModal()">×</button></div><form class="workout-form" onsubmit="saveWorkout(event)"><div class="form-grid"><div class="field full workout-student"><label>Aluno</label><select name="student_id" required><option value="">Selecionar…</option>${opts(id)}</select></div><div class="field workout-date"><label>Data</label><input type="date" name="workout_date" value="${today()}" required></div><div class="field workout-duration"><label>Duração (min)</label><input type="number" name="duration_min" value="60"></div><div class="field full workout-type"><label>Tipo</label><input name="workout_type" placeholder="Ex.: Upper Body" required></div><div class="field full workout-sheet-field"><label>Exercícios e séries</label><div class="workout-help">Cada célula: <strong>reps × carga</strong> · Ex.: <strong>10×60</strong> ou <strong>12×PC</strong>.</div><div class="workout-scroll-hint">Desliza para ver as séries 3–5 →</div><div class="workout-grid-wrap"><table class="workout-grid"><thead><tr><th>Exercício</th><th>Série 1</th><th>Série 2</th><th>Série 3</th><th>Série 4</th><th>Série 5</th><th></th></tr></thead><tbody id="workoutGridBody" data-next-index="4">${[0,1,2,3].map(workoutGridRow).join('')}</tbody></table></div><button type="button" class="secondary workout-add-row" onclick="ttAddWorkoutRow()">+ Exercício</button></div><div class="field full workout-notes"><label>Observações</label><textarea name="notes"></textarea></div></div><div class="form-actions workout-actions"><button type="button" class="secondary" onclick="closeModal()">Cancelar</button><button class="primary">Guardar treino</button></div></form>`);
 window.saveWorkout=async e=>{e.preventDefault();const f=new FormData(e.target),exercises=[...e.target.querySelectorAll('[data-workout-row]')].map(row=>{const name=row.querySelector('input[name^="exercise_name_"]')?.value.trim()||'';const series=[...row.querySelectorAll('input[name*="_set_"]')].map(i=>parseWorkoutSet(i.value)).filter(Boolean);return{name,series};}).filter(x=>x.name||x.series.length);const row={student_id:f.get('student_id'),workout_date:f.get('workout_date'),workout_type:f.get('workout_type').trim(),duration_min:Number(f.get('duration_min'))||null,exercises,notes:f.get('notes').trim()};try{const r=await sb.from('traintrack_workouts').insert(row);if(r.error)throw r.error;closeModal();S.studentId=row.student_id;S.view='student';S.tab='workouts';await refresh();toast('Treino guardado.');}catch(err){fail(err);}};
 
 window.eventModal=(id='')=>{const st=new Date();st.setMinutes(Math.ceil(st.getMinutes()/15)*15,0,0);const en=new Date(st.getTime()+3600000);modal(`<div class="modal-head"><h2>Nova marcação</h2><button class="icon-btn" onclick="closeModal()">×</button></div><form onsubmit="saveEvent(event)"><div class="form-grid"><div class="field full"><label>Aluno</label><select name="student_id" required><option value="">Selecionar…</option>${opts(id)}</select></div><div class="field"><label>Início</label><input type="datetime-local" name="starts_at" value="${localDT(st)}" required></div><div class="field"><label>Fim</label><input type="datetime-local" name="ends_at" value="${localDT(en)}" required></div><div class="field"><label>Tipo</label><select name="event_type"><option>Treino</option><option>Avaliação</option><option>Consulta</option><option>Outro</option></select></div><div class="field"><label>Local</label><input name="location"></div><div class="field full"><label>Notas</label><textarea name="notes"></textarea></div></div><div class="form-actions"><button type="button" class="secondary" onclick="closeModal()">Cancelar</button><button class="primary">Agendar</button></div></form>`);};
