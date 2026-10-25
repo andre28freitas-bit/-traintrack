@@ -96,6 +96,8 @@ jobs:
           grep -q "ttBirthdaySMS" dashboard-home-ui.js
           grep -q "ttBirthdayWhatsApp" dashboard-home-ui.js
           grep -q "workoutGridBody" app.js
+          grep -q "workoutExerciseOptions" app.js
+          grep -q 'list="workoutExerciseOptions"' app.js
           grep -q "Série 5" app.js
           grep -q "parseWorkoutSet" app.js
           grep -q "Normal workout spreadsheet" extensions.css
