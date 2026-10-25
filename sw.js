@@ -1,5 +1,5 @@
 const CACHE = "traintrack-market-v24";
-const APP_SHELL = ["./","./index.html","./styles.css","./extensions.css","./bootstrap.js","./config.js","./auth-redirect.js","./app.js","./extensions-core.js","./score-model.js","./extensions-calendar.js","./assessment-edit.js","./assessment-engine-v3.js","./templates-progress-v2.js","./score-ui-patch.js","./progress-comparison.js","./summary-delta-ui.js","./print-report.js","./calendar-nav-v2.js","./calendar-event-edit.js","./dashboard-home-ui.js","./manifest.json","./icon.svg"];
+const APP_SHELL = ["./","./index.html","./styles.css","./extensions.css","./bootstrap.js","./config.js","./auth-redirect.js","./app.js","./extensions-core.js","./score-model.js","./extensions-calendar.js","./assessment-edit.js","./assessment-engine-v3.js","./templates-progress-v2.js","./assessment-form-ux.js","./score-ui-patch.js","./progress-comparison.js","./summary-delta-ui.js","./print-report.js","./calendar-nav-v2.js","./calendar-event-edit.js","./dashboard-home-ui.js","./manifest.json","./icon.svg"];
 
 self.addEventListener("install", event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(APP_SHELL)));
