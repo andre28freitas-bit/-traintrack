@@ -52,6 +52,7 @@
         './assessment-edit.js',
         './assessment-engine-v3.js',
         './templates-progress-v2.js',
+        './assessment-form-ux.js',
         './score-ui-patch.js',
         './progress-comparison.js',
         './summary-delta-ui.js',
