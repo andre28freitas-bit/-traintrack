@@ -4,12 +4,12 @@
 function updateScoreCopy(){
   const overallNote=document.querySelector('.tt-overall small');
   if(overallNote && overallNote.textContent.trim()==='A aguardar fórmula'){
-    overallNote.textContent='3 fatores · 33,33% cada';
+    overallNote.textContent='Ponderação definida no Back Office';
   }
   document.querySelectorAll('.notice').forEach(el=>{
     const text=el.textContent||'';
     if(text.includes('Overall') && (text.includes('fórmula') || text.includes('formula'))){
-      el.textContent='Ponderação atual do Overall: média simples dos 3 fatores individuais (33,33% cada). Os valores de referência podem ser atualizados depois sem alterar o histórico das avaliações.';
+      el.textContent='O Overall usa a ponderação definida no Back Office. Os resultados brutos das avaliações mantêm-se sempre inalterados.';
     }
   });
 }
