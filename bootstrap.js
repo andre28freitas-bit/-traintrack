@@ -50,6 +50,7 @@
         './score-model.js',
         './extensions-calendar.js',
         './assessment-edit.js',
+        './assessment-engine-v3.js',
         './templates-progress-v2.js',
         './score-ui-patch.js',
         './progress-comparison.js',
