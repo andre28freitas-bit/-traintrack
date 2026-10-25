@@ -22,7 +22,18 @@ const DEFAULT_TESTS=[
   {name:'Snatch',category:'Exercícios integrados',unit:'kg',scoring_key:'tracking',counts_for_score:false},
   {name:'Flexões',category:'Calistenia',unit:'reps',scoring_key:'tracking',counts_for_score:false},
   {name:'Afundos',category:'Calistenia',unit:'reps',scoring_key:'tracking',counts_for_score:false},
-  {name:'Elevações',category:'Calistenia',unit:'reps',scoring_key:'tracking',counts_for_score:false}
+  {name:'Elevações',category:'Calistenia',unit:'reps',scoring_key:'tracking',counts_for_score:false},
+  {name:'Press militar',category:'Força',unit:'kg',scoring_key:'tracking',counts_for_score:false},
+  {name:'Leg press',category:'Força',unit:'kg',scoring_key:'tracking',counts_for_score:false},
+  {name:'Hip thrust',category:'Força',unit:'kg',scoring_key:'tracking',counts_for_score:false},
+  {name:'Lunges',category:'Força',unit:'kg',scoring_key:'tracking',counts_for_score:false},
+  {name:'Abdominais',category:'Core',unit:'reps',scoring_key:'tracking',counts_for_score:false},
+  {name:'Prancha',category:'Core',unit:'s',scoring_key:'tracking',counts_for_score:false},
+  {name:'Prancha lateral',category:'Core',unit:'s',scoring_key:'tracking',counts_for_score:false},
+  {name:'Burpees',category:'Calistenia',unit:'reps',scoring_key:'tracking',counts_for_score:false},
+  {name:'Salto vertical',category:'Potência',unit:'cm',scoring_key:'tracking',counts_for_score:false},
+  {name:'Salto horizontal',category:'Potência',unit:'cm',scoring_key:'tracking',counts_for_score:false},
+  {name:'Sit-and-Reach',category:'Mobilidade',unit:'cm',scoring_key:'tracking',counts_for_score:false}
 ];
 
 const STRENGTH={
@@ -55,7 +66,7 @@ const css=document.createElement('style');
 css.textContent=`
 .tt-bo-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:14px;margin-bottom:18px}
 .tt-bo-card{padding:18px}
-.tt-weight-row{display:grid;grid-template-columns:1fr 110px;gap:10px;align-items:center;margin-top:10px}
+.tt-weight-row{display:grid;grid-template-columns:1fr 110px;gap:10px;align-items:center;margin-top:10px}.tt-weight-row label{display:flex;flex-direction:column;gap:2px}.tt-weight-status{font-size:9px;color:var(--muted);font-weight:500}.tt-weight-input{display:flex;align-items:center;gap:6px}.tt-weight-input input{min-width:0}.tt-weight-input span{font-size:11px;color:var(--muted);font-weight:800}
 .tt-weight-total{margin-top:10px;font-size:11px;color:var(--muted)}
 .tt-catalog-groups{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}
 .tt-catalog-group{border:1px solid var(--border);border-radius:12px;padding:11px;background:#fbfcfe}
@@ -213,8 +224,12 @@ async function recalcAll(){
 
 window.ttSaveOverallWeights=async e=>{
   e.preventDefault();
-  const f=new FormData(e.target);
-  const weights={Força:num(f.get('Força'))||0,Cardiovascular:num(f.get('Cardiovascular'))||0};
+  const weights={};
+  e.target.querySelectorAll('[data-overall-category]').forEach(input=>{
+    const category=input.dataset.overallCategory;
+    const value=num(input.value)||0;
+    if(value>0)weights[category]=value;
+  });
   const total=Object.values(weights).reduce((s,v)=>s+v,0);
   if(Math.abs(total-100)>.01)return toast('A soma das ponderações tem de ser 100%.',true);
   const {error}=await db.from('traintrack_profiles').update({overall_weights:weights});
@@ -237,6 +252,18 @@ function catalogHTML(tests){
   return Object.entries(groups).map(([cat,items])=>`<div class="tt-catalog-group"><h4>${esc(cat)}</h4>${items.map(t=>{const ref=scoreableKey(t.scoring_key);return `<div class="tt-test-chip"><div><strong>${esc(t.name)}</strong><small> · ${esc(t.unit||'')}</small><div class="tt-track">${ref?'Referência automática disponível':'Sem referência automática'}</div></div><select aria-label="Modo de ${esc(t.name)}" onchange="ttSetTestScoreMode('${t.id}',this.value)"><option value="score" ${t.counts_for_score?'selected':''}>Avaliação + tracking</option><option value="tracking" ${!t.counts_for_score?'selected':''}>Só tracking</option></select></div>`}).join('')}</div>`).join('');
 }
 
+const CATEGORY_ORDER=['Força','Cardiovascular','Exercícios integrados','Calistenia','Core','Potência','Mobilidade','Resistência','Outro'];
+function orderedCategories(tests){
+  return [...new Set((tests||[]).map(t=>t.category).filter(Boolean))].sort((a,b)=>{
+    const ai=CATEGORY_ORDER.indexOf(a),bi=CATEGORY_ORDER.indexOf(b);
+    return (ai<0?999:ai)-(bi<0?999:bi)||a.localeCompare(b,'pt');
+  });
+}
+function categoryCanScore(category,tests){
+  return (tests||[]).some(t=>t.category===category&&t.counts_for_score&&scoreableKey(t.scoring_key));
+}
+function categoryLabel(category){return category==='Cardiovascular'?'Cardio':category}
+
 async function enhanceBO(force=false){
   if(document.querySelector('#pageTitle')?.textContent?.trim()!=='Avaliações')return;
   if(force)document.querySelector('.tt-assessment-bo')?.remove();
@@ -254,9 +281,8 @@ async function enhanceBO(force=false){
       <div class="card tt-bo-card">
         <div class="section-head" style="margin-top:0"><div><h2>Fórmula do Overall</h2><p>Configuração global aplicada a todos os alunos.</p></div></div>
         <form onsubmit="ttSaveOverallWeights(event)">
-          <div class="tt-weight-row"><label>Cardio</label><input name="Cardiovascular" type="number" min="0" max="100" step="1" value="${esc(weights.Cardiovascular??'')}"></div>
-          <div class="tt-weight-row"><label>Força</label><input name="Força" type="number" min="0" max="100" step="1" value="${esc(weights['Força']??'')}"></div>
-          <div class="tt-weight-total">A soma tem de ser 100%. Ex.: Cardio 60% + Força 40%.</div>
+          ${orderedCategories(tests||[]).map(category=>`<div class="tt-weight-row"><label>${esc(categoryLabel(category))}<small class="tt-weight-status">${categoryCanScore(category,tests||[])?'Score disponível':'Sem score automático'}</small></label><div class="tt-weight-input"><input data-overall-category="${esc(category)}" type="number" min="0" max="100" step="1" value="${esc(weights[category]??0)}"><span>%</span></div></div>`).join('')}
+          <div class="tt-weight-total">Distribui 100% pelas categorias que queres incluir no Overall. Categorias sem score automático podem ter peso configurado, mas só entram no cálculo quando tiverem uma regra de avaliação válida.</div>
           <div class="form-actions"><button type="button" class="secondary" onclick="ttReferenceModal()">Ver referências</button><button class="primary">Guardar fórmula</button></div>
         </form>
       </div>
