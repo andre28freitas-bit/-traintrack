@@ -190,3 +190,184 @@
     min-height:44px;
   }
 }
+
+
+/* Responsive viewport fit v30 */
+@media(max-width:640px){
+  /* Every regular modal control must stay inside the viewport. */
+  .modal{
+    max-width:calc(100dvw - 12px);
+    overflow-x:hidden;
+  }
+  .modal .field,
+  .modal input,
+  .modal select,
+  .modal textarea{
+    min-width:0;
+    max-width:100%;
+  }
+  .modal input,
+  .modal select,
+  .modal textarea{
+    width:100%;
+  }
+
+  /* Workout modal: deterministic mobile layout. */
+  .modal-backdrop:has(.workout-form){
+    padding:6px;
+  }
+  .modal:has(.workout-form){
+    width:calc(100dvw - 12px);
+    max-width:calc(100dvw - 12px);
+  }
+  .workout-form{
+    width:100%;
+    max-width:100%;
+    padding:12px 12px 0;
+  }
+  .workout-form .form-grid{
+    width:100%;
+    max-width:100%;
+    grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+    grid-template-areas:
+      "student student"
+      "date duration"
+      "type type"
+      "sheet sheet"
+      "notes notes";
+    gap:9px;
+  }
+  .workout-student{grid-area:student}
+  .workout-date{grid-area:date}
+  .workout-duration{grid-area:duration}
+  .workout-type{grid-area:type}
+  .workout-sheet-field{grid-area:sheet}
+  .workout-notes{grid-area:notes}
+
+  .workout-form .field{
+    width:100%;
+    max-width:100%;
+    min-width:0;
+    overflow:hidden;
+  }
+  .workout-form input,
+  .workout-form select,
+  .workout-form textarea{
+    width:100%;
+    max-width:100%;
+    min-width:0;
+    box-sizing:border-box;
+    font-size:16px;
+  }
+  .workout-date input[type="date"]{
+    width:100%;
+    min-width:0;
+    max-width:100%;
+    text-align:left;
+    padding-left:10px;
+    padding-right:8px;
+  }
+  .workout-date input[type="date"]::-webkit-date-and-time-value{
+    min-width:0;
+    text-align:left;
+  }
+  .workout-help{
+    max-width:100%;
+    overflow-wrap:anywhere;
+    font-size:11px;
+  }
+  .workout-scroll-hint{display:none}
+
+  /* On phones the full five-set sheet fits the available width. */
+  .workout-sheet-field{
+    width:100%;
+    max-width:100%;
+    min-width:0;
+    overflow:hidden;
+  }
+  .workout-grid-wrap{
+    width:100%;
+    max-width:100%;
+    min-width:0;
+    overflow-x:hidden;
+    overflow-y:visible;
+  }
+  .workout-grid{
+    width:100%;
+    min-width:0;
+    max-width:100%;
+    table-layout:fixed;
+  }
+  .workout-grid th:first-child,
+  .workout-grid td:first-child{
+    position:static;
+    width:28%;
+    min-width:0;
+    max-width:none;
+    box-shadow:none;
+  }
+  .workout-grid th:nth-child(n+2):nth-child(-n+6),
+  .workout-grid td:nth-child(n+2):nth-child(-n+6){
+    width:13%;
+    min-width:0;
+  }
+  .workout-grid th:last-child,
+  .workout-grid td:last-child{
+    width:7%;
+    min-width:0;
+  }
+  .workout-grid th,
+  .workout-grid td{
+    padding:3px 2px;
+    overflow:hidden;
+  }
+  .workout-grid th{
+    font-size:clamp(7.5px,2.2vw,9px);
+    line-height:1.1;
+    white-space:nowrap;
+    text-overflow:clip;
+  }
+  .workout-grid input{
+    width:100%;
+    min-width:0;
+    min-height:36px;
+    padding:4px 1px;
+    font-size:16px;
+    line-height:1;
+    border-radius:8px;
+  }
+  .workout-grid .workout-name-cell input{
+    padding-inline:5px;
+    text-align:left;
+  }
+  .workout-remove{
+    width:100%;
+    min-width:0;
+    height:32px;
+    padding:0;
+    font-size:16px;
+  }
+  .workout-actions{
+    margin-left:-12px;
+    margin-right:-12px;
+    padding-left:12px;
+    padding-right:12px;
+  }
+}
+
+@media(max-width:360px){
+  .workout-form{padding-left:9px;padding-right:9px}
+  .workout-form .form-grid{gap:7px}
+  .workout-grid th:first-child,
+  .workout-grid td:first-child{width:26%}
+  .workout-grid th:nth-child(n+2):nth-child(-n+6),
+  .workout-grid td:nth-child(n+2):nth-child(-n+6){width:13.4%}
+  .workout-grid th:last-child,
+  .workout-grid td:last-child{width:7%}
+  .workout-actions{
+    margin-left:-9px;
+    margin-right:-9px;
+    padding-left:9px;
+    padding-right:9px;
+  }
+}
