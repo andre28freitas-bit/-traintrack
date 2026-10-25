@@ -269,6 +269,32 @@ async function addProgressExplanation(){
   hero.append(box);
 }
 
+const baseSaveAssessment=window.saveAssessment;
+if(baseSaveAssessment) window.saveAssessment=async function(e){
+  const fd=new FormData(e.target),studentId=String(fd.get('student_id')||'');
+  await baseSaveAssessment(e);
+  try{
+    await recalcAll();
+    if(typeof window.ttReloadData==='function') await window.ttReloadData();
+    if(studentId) window.openStudent?.(studentId,'assessments');
+  }catch(err){console.warn('TrainTrack score refresh:',err?.message||err)}
+};
+
+const baseSaveAssessmentEdit=window.ttSaveAssessmentEdit;
+if(baseSaveAssessmentEdit) window.ttSaveAssessmentEdit=async function(e,assessmentId){
+  let studentId=null;
+  try{
+    const {data}=await db.from('traintrack_assessments').select('student_id').eq('id',assessmentId).single();
+    studentId=data?.student_id||null;
+  }catch{}
+  await baseSaveAssessmentEdit(e,assessmentId);
+  try{
+    await recalcAll();
+    if(typeof window.ttReloadData==='function') await window.ttReloadData();
+    if(studentId) window.openStudent?.(studentId,'assessments');
+  }catch(err){console.warn('TrainTrack edited score refresh:',err?.message||err)}
+};
+
 let enhancing=false;
 async function apply(){
   if(enhancing)return;enhancing=true;
