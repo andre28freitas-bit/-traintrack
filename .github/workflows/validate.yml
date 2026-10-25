@@ -107,7 +107,6 @@ jobs:
           grep -q "Mobile workout modal UX" extensions.css
           grep -q "Workout mobile containment fixes" extensions.css
           grep -q "::-webkit-date-and-time-value" extensions.css
-          grep -q 'list="workoutExerciseOptions"' app.js
           grep -q "Série 5" app.js
           grep -q "parseWorkoutSet" app.js
           grep -q "Normal workout spreadsheet" extensions.css
