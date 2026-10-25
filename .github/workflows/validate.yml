@@ -101,6 +101,8 @@ jobs:
           grep -q "ttWorkoutCellKey" app.js
           grep -q "workout-scroll-hint" app.js
           grep -q "Mobile workout modal UX" extensions.css
+          grep -q "Workout mobile containment fixes" extensions.css
+          grep -q "::-webkit-date-and-time-value" extensions.css
           grep -q 'list="workoutExerciseOptions"' app.js
           grep -q "Série 5" app.js
           grep -q "parseWorkoutSet" app.js
