@@ -17,7 +17,7 @@ const DEFAULT_TESTS=[
   {name:'Remada inclinada',category:'Força',unit:'kg',scoring_key:'tracking'},
   {name:'Teste de Cooper',category:'Cardiovascular',unit:'m',scoring_key:'cooper'},
   {name:'Teste BIP',category:'Cardiovascular',unit:'nível',scoring_key:'tracking'},
-  {name:'VO₂max estimado',category:'Cardiovascular',unit:'ml/kg/min',scoring_key:'vo2'},
+  {name:'VO₂max estimado',category:'Cardiovascular',unit:'ml/kg/min',scoring_key:'vo2_derived'},
   {name:'Clean & Press',category:'Exercícios integrados',unit:'kg',scoring_key:'tracking'},
   {name:'Snatch',category:'Exercícios integrados',unit:'kg',scoring_key:'tracking'},
   {name:'Flexões',category:'Calistenia',unit:'reps',scoring_key:'tracking'},
@@ -74,6 +74,12 @@ document.head.appendChild(css);
 
 const normName=s=>String(s||'').trim().toLocaleLowerCase('pt-PT');
 const num=v=>{const n=Number(String(v??'').replace(',','.'));return Number.isFinite(n)?n:null};
+function cooperVO2(distance){
+  const d=num(distance);
+  return d!=null&&d>0?(d-504.9)/44.73:null;
+}
+X.cooperVO2=cooperVO2;
+
 function ageAt(birth,date){
   if(!birth||!date)return null;
   const b=new Date(birth+'T12:00:00'),d=new Date(date+'T12:00:00');
@@ -101,7 +107,7 @@ async function ensureCatalog(){
       const patch={};
       if(existing.category!==def.category)patch.category=def.category;
       if(!existing.unit)patch.unit=def.unit;
-      if(!existing.scoring_key)patch.scoring_key=def.scoring_key;
+      if(existing.scoring_key!==def.scoring_key)patch.scoring_key=def.scoring_key;
       if(Object.keys(patch).length){
         const r=await db.from('traintrack_test_definitions').update(patch).eq('id',existing.id);
         if(r.error)throw r.error;
@@ -141,8 +147,17 @@ function resultFor(test,value,student,assessment){
   const key=test?.scoring_key;
   if(key?.startsWith('strength_'))return strengthResult(value,key,student,assessment);
   if(key==='cooper')return cooperResult(value,student,assessment);
-  if(key==='vo2')return vo2Result(value,student,assessment);
+  if(key==='vo2_derived')return vo2Result(value,student,assessment);
   return null;
+}
+
+function withDerivedVO2(assessment,tests){
+  const cooper=tests.find(t=>t.scoring_key==='cooper');
+  const vo2=tests.find(t=>t.scoring_key==='vo2_derived');
+  if(!cooper||!vo2)return assessment;
+  const derived=cooperVO2(assessment?.values?.[cooper.id]);
+  if(derived==null)return assessment;
+  return {...assessment,values:{...(assessment.values||{}),[vo2.id]:derived.toFixed(1)}};
 }
 
 function calcScores(assessment,student,tests,weights){
@@ -155,7 +170,7 @@ function calcScores(assessment,student,tests,weights){
     if(!r)continue;
     details[test.id]={name:test.name,category:test.category,...r};
     if(test.scoring_key==='cooper'){cardioPrimary=r;continue}
-    if(test.scoring_key==='vo2'){cardioFallback=r;continue}
+    if(test.scoring_key==='vo2_derived'){cardioFallback=r;continue}
     (grouped[test.category] ||= []).push(r.score);
   }
   const categories={};
@@ -185,10 +200,11 @@ async function recalcAll(){
   ]);
   if(se||te||ae)throw(se||te||ae);
   const sm=new Map((students||[]).map(s=>[s.id,s]));
-  for(const a of assessments||[]){
-    const s=sm.get(a.student_id);if(!s)continue;
+  for(const a0 of assessments||[]){
+    const s=sm.get(a0.student_id);if(!s)continue;
+    const a=withDerivedVO2(a0,tests||[]);
     const scores=calcScores(a,s,tests||[],weights);
-    const r=await db.from('traintrack_assessments').update({scores}).eq('id',a.id);
+    const r=await db.from('traintrack_assessments').update({values:a.values,scores}).eq('id',a.id);
     if(r.error)throw r.error;
   }
 }
@@ -205,7 +221,7 @@ window.ttSaveOverallWeights=async e=>{
   catch(err){toast(err.message||'Fórmula guardada, mas houve erro ao recalcular.',true)}
 };
 
-function scoreableKey(key){return key==='cooper'||key==='vo2'||String(key||'').startsWith('strength_')}
+function scoreableKey(key){return key==='cooper'||key==='vo2_derived'||String(key||'').startsWith('strength_')}
 function catalogHTML(tests){
   const groups={};
   tests.forEach(t=>(groups[t.category] ||= []).push(t));
@@ -255,7 +271,7 @@ window.ttReferenceModal=()=>{
     <table class="tt-ref-table"><thead><tr><th>Grupo</th><th>Médio</th><th>Bom</th><th>Excelente</th></tr></thead>
     <tbody><tr><td>Homens 20–29</td><td>2200–2399 m</td><td>2400–2800 m</td><td>&gt;2800 m</td></tr><tr><td>Homens 30–39</td><td>2000–2299 m</td><td>2300–2700 m</td><td>&gt;2700 m</td></tr><tr><td>Mulheres 20–29</td><td>1800–2199 m</td><td>2200–2700 m</td><td>&gt;2700 m</td></tr><tr><td>Mulheres 30–39</td><td>1700–1999 m</td><td>2000–2500 m</td><td>&gt;2500 m</td></tr></tbody></table>
   </div>
-  <div class="tt-ref-section"><h3>VO₂max — referência fornecida</h3>
+  <div class="tt-ref-section"><h3>VO₂max estimado pelo Cooper</h3><p class="stat-note">Calculado automaticamente: (distância em metros − 504,9) / 44,73.</p>
     <table class="tt-ref-table"><tbody><tr><td>Abaixo de 35</td><td>Baixo</td></tr><tr><td>36–44</td><td>Médio / bom</td></tr><tr><td>45+</td><td>Excelente</td></tr></tbody></table>
   </div>
   <div class="form-actions"><button class="primary" onclick="closeModal()">Fechar</button></div>`);
