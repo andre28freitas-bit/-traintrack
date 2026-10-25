@@ -7,7 +7,7 @@ const db=X.db;
 const esc=X.esc||((v)=>String(v??''));
 let testsCache=null;
 
-const CATEGORY_ORDER=['Força','Cardiovascular','Exercícios integrados','Calistenia','Resistência','Mobilidade','Potência','Outro'];
+const CATEGORY_ORDER=['Força','Cardiovascular','Exercícios integrados','Calistenia','Core','Potência','Mobilidade','Resistência','Outro'];
 
 const css=document.createElement('style');
 css.textContent=`
