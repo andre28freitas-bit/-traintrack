@@ -76,3 +76,117 @@
     padding:6px;
   }
 }
+
+
+/* Mobile workout modal UX */
+.workout-form,
+.workout-form .form-grid,
+.workout-sheet-field{min-width:0}
+.workout-help{font-size:11px;color:var(--muted);line-height:1.45;margin-bottom:4px}
+.workout-scroll-hint{display:none;font-size:9px;color:var(--blue);font-weight:800;margin:0 0 7px;text-align:right}
+.workout-grid-wrap{max-width:100%;overscroll-behavior-x:contain}
+.workout-actions{background:#fff}
+
+@media(max-width:640px){
+  .modal-backdrop:has(.workout-form){
+    padding:8px;
+    align-items:end;
+  }
+  .modal:has(.workout-form){
+    width:100%;
+    max-width:none;
+    max-height:calc(100dvh - 16px);
+    border-radius:22px 22px 14px 14px;
+    padding:0;
+    overflow-y:auto;
+    overflow-x:hidden;
+    overscroll-behavior:contain;
+  }
+  .modal:has(.workout-form) .modal-head{
+    position:sticky;
+    top:0;
+    z-index:20;
+    margin:0;
+    padding:14px 14px 11px;
+    background:rgba(255,255,255,.97);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--border);
+  }
+  .modal:has(.workout-form) .modal-head h2{font-size:18px}
+  .workout-form{
+    padding:12px 14px 0;
+  }
+  .workout-form .form-grid{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:10px;
+  }
+  .workout-form .field.full{
+    grid-column:1/-1;
+  }
+  .workout-form .field,
+  .workout-form input,
+  .workout-form select,
+  .workout-form textarea{
+    min-width:0;
+    max-width:100%;
+  }
+  .workout-form input,
+  .workout-form select{
+    min-height:44px;
+  }
+  .workout-date input[type="date"]{
+    width:100%;
+    font-size:14px;
+  }
+  .workout-help{
+    font-size:10px;
+    white-space:normal;
+  }
+  .workout-scroll-hint{display:block}
+  .workout-grid-wrap{
+    width:100%;
+    overflow-x:auto;
+    overflow-y:hidden;
+    margin-inline:0;
+  }
+  .workout-grid{
+    min-width:650px;
+  }
+  .workout-grid th:first-child,
+  .workout-grid td:first-child{
+    width:132px;
+    min-width:132px;
+  }
+  .workout-grid th:not(:first-child){
+    width:80px;
+  }
+  .workout-grid th,
+  .workout-grid td{
+    padding:5px;
+  }
+  .workout-grid input{
+    min-height:35px;
+    font-size:11px;
+    padding:5px 6px;
+  }
+  .workout-add-row{
+    width:100%;
+    min-height:42px;
+  }
+  .workout-notes textarea{
+    min-height:68px;
+  }
+  .workout-actions{
+    position:sticky;
+    bottom:0;
+    z-index:15;
+    margin:14px -14px 0;
+    padding:10px 14px calc(10px + env(safe-area-inset-bottom));
+    border-top:1px solid var(--border);
+    box-shadow:0 -8px 24px rgba(15,23,42,.06);
+  }
+  .workout-actions button{
+    flex:1;
+    min-height:44px;
+  }
+}
