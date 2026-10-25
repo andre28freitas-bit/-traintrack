@@ -75,6 +75,7 @@ jobs:
           grep -q "calendar-nav-v2.js" bootstrap.js
           grep -q "calendar-event-edit.js" bootstrap.js
           grep -q "dashboard-home-ui.js" bootstrap.js
+          grep -q "assessment-engine-v3.js" bootstrap.js
           grep -q "score-model.js" bootstrap.js
           grep -q "score-ui-patch.js" bootstrap.js
           grep -q "progress-comparison.js" bootstrap.js
@@ -93,6 +94,10 @@ jobs:
           grep -q "ttBirthdaySMS" dashboard-home-ui.js
           grep -q "ttBirthdayWhatsApp" dashboard-home-ui.js
           grep -q "ttSaveOverallWeights" assessment-engine-v3.js
+          grep -q "cooperVO2" assessment-engine-v3.js
+          grep -q "vo2_derived" assessment-engine-v3.js
+          grep -q "504.9" assessment-engine-v3.js
+          grep -q "44.73" assessment-engine-v3.js
           grep -q "Remada inclinada" assessment-engine-v3.js
           grep -q "Teste BIP" assessment-engine-v3.js
           grep -q "Exercícios integrados" assessment-engine-v3.js
