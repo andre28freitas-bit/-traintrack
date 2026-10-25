@@ -96,6 +96,14 @@ jobs:
           grep -q "ttBirthdaySMS" dashboard-home-ui.js
           grep -q "ttBirthdayWhatsApp" dashboard-home-ui.js
           grep -q "ttSaveOverallWeights" assessment-engine-v3.js
+          grep -q "data-overall-category" assessment-engine-v3.js
+          grep -q "Core" assessment-engine-v3.js
+          grep -q "Abdominais" assessment-engine-v3.js
+          grep -q "Prancha" assessment-engine-v3.js
+          grep -q "Press militar" assessment-engine-v3.js
+          grep -q "Leg press" assessment-engine-v3.js
+          grep -q "Hip thrust" assessment-engine-v3.js
+          grep -q "Sit-and-Reach" assessment-engine-v3.js
           grep -q "ttSetTestScoreMode" assessment-engine-v3.js
           grep -q "counts_for_score" assessment-engine-v3.js
           grep -q "tt-test-group" assessment-form-ux.js
