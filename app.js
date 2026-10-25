@@ -7,18 +7,18 @@ const sb = window.supabase?.createClient?.(cfg.supabaseUrl, cfg.supabaseAnonKey,
 });
 
 const starterTests = [
-  {sort_order:1,name:'Supino',category:'Força',unit:'kg',ideal_value:'',scoring_key:'strength_bench',active:true},
-  {sort_order:2,name:'Agachamento',category:'Força',unit:'kg',ideal_value:'',scoring_key:'strength_squat',active:true},
-  {sort_order:3,name:'Levantamento Terra',category:'Força',unit:'kg',ideal_value:'',scoring_key:'strength_deadlift',active:true},
-  {sort_order:4,name:'Remada inclinada',category:'Força',unit:'kg',ideal_value:'',scoring_key:'tracking',active:true},
-  {sort_order:5,name:'Teste de Cooper',category:'Cardiovascular',unit:'m',ideal_value:'',scoring_key:'cooper',active:true},
-  {sort_order:6,name:'Teste BIP',category:'Cardiovascular',unit:'nível',ideal_value:'',scoring_key:'tracking',active:true},
-  {sort_order:7,name:'VO₂max estimado',category:'Cardiovascular',unit:'ml/kg/min',ideal_value:'',scoring_key:'vo2_derived',active:true},
-  {sort_order:8,name:'Clean & Press',category:'Exercícios integrados',unit:'kg',ideal_value:'',scoring_key:'tracking',active:true},
-  {sort_order:9,name:'Snatch',category:'Exercícios integrados',unit:'kg',ideal_value:'',scoring_key:'tracking',active:true},
-  {sort_order:10,name:'Flexões',category:'Calistenia',unit:'reps',ideal_value:'',scoring_key:'tracking',active:true},
-  {sort_order:11,name:'Afundos',category:'Calistenia',unit:'reps',ideal_value:'',scoring_key:'tracking',active:true},
-  {sort_order:12,name:'Elevações',category:'Calistenia',unit:'reps',ideal_value:'',scoring_key:'tracking',active:true}
+  {sort_order:1,name:'Supino',category:'Força',unit:'kg',ideal_value:'',scoring_key:'strength_bench',counts_for_score:true,active:true},
+  {sort_order:2,name:'Agachamento',category:'Força',unit:'kg',ideal_value:'',scoring_key:'strength_squat',counts_for_score:true,active:true},
+  {sort_order:3,name:'Levantamento Terra',category:'Força',unit:'kg',ideal_value:'',scoring_key:'strength_deadlift',counts_for_score:true,active:true},
+  {sort_order:4,name:'Remada inclinada',category:'Força',unit:'kg',ideal_value:'',scoring_key:'tracking',counts_for_score:false,active:true},
+  {sort_order:5,name:'Teste de Cooper',category:'Cardiovascular',unit:'m',ideal_value:'',scoring_key:'cooper',counts_for_score:true,active:true},
+  {sort_order:6,name:'Teste BIP',category:'Cardiovascular',unit:'nível',ideal_value:'',scoring_key:'tracking',counts_for_score:false,active:true},
+  {sort_order:7,name:'VO₂max estimado',category:'Cardiovascular',unit:'ml/kg/min',ideal_value:'',scoring_key:'vo2_derived',counts_for_score:false,active:true},
+  {sort_order:8,name:'Clean & Press',category:'Exercícios integrados',unit:'kg',ideal_value:'',scoring_key:'tracking',counts_for_score:false,active:true},
+  {sort_order:9,name:'Snatch',category:'Exercícios integrados',unit:'kg',ideal_value:'',scoring_key:'tracking',counts_for_score:false,active:true},
+  {sort_order:10,name:'Flexões',category:'Calistenia',unit:'reps',ideal_value:'',scoring_key:'tracking',counts_for_score:false,active:true},
+  {sort_order:11,name:'Afundos',category:'Calistenia',unit:'reps',ideal_value:'',scoring_key:'tracking',counts_for_score:false,active:true},
+  {sort_order:12,name:'Elevações',category:'Calistenia',unit:'reps',ideal_value:'',scoring_key:'tracking',counts_for_score:false,active:true}
 ];
 
 const S = { user:null, data:null, view:'dashboard', studentId:null, tab:'overview' };
