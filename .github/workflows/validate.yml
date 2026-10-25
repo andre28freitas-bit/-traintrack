@@ -95,6 +95,10 @@ jobs:
           grep -q "Próximos 30 dias" dashboard-home-ui.js
           grep -q "ttBirthdaySMS" dashboard-home-ui.js
           grep -q "ttBirthdayWhatsApp" dashboard-home-ui.js
+          grep -q "workoutGridBody" app.js
+          grep -q "Série 5" app.js
+          grep -q "parseWorkoutSet" app.js
+          grep -q "Normal workout spreadsheet" extensions.css
           grep -q "ttSaveOverallWeights" assessment-engine-v3.js
           grep -q "data-overall-category" assessment-engine-v3.js
           grep -q "Core" assessment-engine-v3.js
