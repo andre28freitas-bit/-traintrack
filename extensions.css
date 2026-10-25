@@ -371,3 +371,100 @@
     padding-right:9px;
   }
 }
+
+
+/* Workout mobile containment fixes */
+@media(max-width:640px){
+  .modal:has(.workout-form){
+    max-width:calc(100vw - 16px);
+    contain:layout paint;
+  }
+
+  .workout-form,
+  .workout-form .form-grid,
+  .workout-form .field,
+  .workout-sheet-field{
+    width:100%;
+    max-width:100%;
+    min-width:0;
+  }
+
+  .workout-form .field{
+    overflow:hidden;
+  }
+
+  .workout-form input,
+  .workout-form select,
+  .workout-form textarea{
+    display:block;
+    width:100%;
+    max-width:100%;
+    min-width:0;
+    box-sizing:border-box;
+  }
+
+  .workout-date{
+    min-width:0;
+  }
+
+  .workout-date input[type="date"]{
+    display:block;
+    width:100%;
+    min-width:0;
+    max-width:100%;
+    -webkit-appearance:none;
+    appearance:none;
+    text-align:left;
+    padding-left:10px;
+    padding-right:10px;
+    overflow:hidden;
+  }
+
+  .workout-date input[type="date"]::-webkit-date-and-time-value{
+    text-align:left;
+    min-width:0;
+    margin:0;
+  }
+
+  .workout-help{
+    display:block;
+    width:100%;
+    max-width:100%;
+    overflow-wrap:anywhere;
+    word-break:normal;
+    padding-right:2px;
+  }
+
+  .workout-scroll-hint{
+    max-width:100%;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+
+  .workout-grid-wrap{
+    display:block;
+    width:100%;
+    max-width:100%;
+    min-width:0;
+    overflow-x:auto;
+    overflow-y:hidden;
+    position:relative;
+  }
+
+  .workout-grid{
+    max-width:none;
+  }
+
+  .workout-grid th,
+  .workout-grid td{
+    overflow:hidden;
+  }
+
+  .workout-grid input{
+    display:block;
+    width:100%;
+    max-width:100%;
+    min-width:0;
+  }
+}
