@@ -122,6 +122,9 @@ jobs:
           grep -q "ttSetTestScoreMode" assessment-engine-v3.js
           grep -q "counts_for_score" assessment-engine-v3.js
           grep -q "tt-test-group" assessment-form-ux.js
+          grep -q "ensureTestFields" assessment-form-ux.js
+          grep -q "Performance nos exercícios" assessment-form-ux.js
+          grep -q "testFieldMarkup" assessment-form-ux.js
           grep -q "Avaliação + tracking" assessment-form-ux.js
           grep -q "cooperVO2" assessment-engine-v3.js
           grep -q "vo2_derived" assessment-engine-v3.js
