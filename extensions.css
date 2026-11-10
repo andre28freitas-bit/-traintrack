@@ -614,3 +614,56 @@
     font-size:13px;
   }
 }
+
+
+/* Assessment wellbeing */
+.wellbeing-grid{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:10px;
+  margin:10px 0 14px;
+}
+.wellbeing-card{
+  min-width:0;
+  padding:12px;
+  border:1px solid var(--border);
+  border-radius:12px;
+  background:#fbfcfe;
+}
+.wellbeing-card>label{
+  display:block;
+  margin-bottom:7px;
+  font-size:12px;
+  font-weight:800;
+  color:var(--text);
+}
+.wellbeing-score{
+  display:flex;
+  align-items:center;
+  gap:7px;
+}
+.wellbeing-score input{
+  width:78px;
+  min-width:0;
+  text-align:center;
+  font-weight:800;
+}
+.wellbeing-score span{
+  font-size:11px;
+  font-weight:800;
+  color:var(--muted);
+}
+.wellbeing-card .field-hint{
+  margin:6px 0 8px;
+}
+.wellbeing-card textarea{
+  width:100%;
+  min-height:58px;
+  resize:vertical;
+}
+@media(max-width:700px){
+  .wellbeing-grid{grid-template-columns:1fr}
+  .wellbeing-card{padding:11px}
+  .wellbeing-score input{width:88px}
+  .wellbeing-card textarea{min-height:54px}
+}
