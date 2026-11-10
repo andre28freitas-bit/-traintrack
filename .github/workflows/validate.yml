@@ -147,3 +147,9 @@ jobs:
           grep -q "percentText" summary-delta-ui.js
           grep -q "@page{size:A4 landscape" print-report.js
           grep -q "window.print" print-report.js
+
+          grep -q "sleep_quality" extensions-core.js
+          grep -q "nutrition_quality" extensions-core.js
+          grep -q "readWellbeing" extensions-core.js
+          grep -q "Assessment wellbeing" extensions.css
+          grep -q "wellbeingQuestions" assessment-edit.js
