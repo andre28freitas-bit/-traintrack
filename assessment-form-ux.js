@@ -11,7 +11,10 @@ const CATEGORY_ORDER=['Força','Cardiovascular','Exercícios integrados','Calist
 
 const css=document.createElement('style');
 css.textContent=`
-.tt-test-groups{display:grid;gap:18px;margin:4px 0 10px}
+.tt-test-groups{display:grid;gap:14px;margin:8px 0 10px}
+.tt-performance-head{padding:13px 14px;border:1px solid var(--border);border-radius:14px;background:#f3f7ff}
+.tt-performance-head strong{display:block;font-size:14px;color:var(--text)}
+.tt-performance-head span{display:block;margin-top:3px;font-size:10.5px;line-height:1.4;color:var(--muted)}
 .tt-test-group{border:1px solid var(--border);border-radius:16px;background:#f8fafc;overflow:hidden}
 .tt-test-group-head{padding:12px 14px;border-bottom:1px solid var(--border);background:#eef3f9}
 .tt-test-group-head strong{display:block;font-size:13px;letter-spacing:.02em}
@@ -73,16 +76,57 @@ function syncEmptyGroups(form){
   });
 }
 
+function testFieldMarkup(test){
+  const derived=test.scoring_key==='vo2_derived';
+  const field=document.createElement('div');
+  field.className='field';
+  field.dataset.templateTest=String(test.id);
+  field.innerHTML=derived
+    ? `<label>${esc(test.name)}</label><input name="test_${test.id}" readonly placeholder="Calculado automaticamente pelo Cooper"><div class="stat-note">Calculado a partir da distância do Cooper.</div>`
+    : `<label>${esc(test.name)}</label><input name="test_${test.id}" inputmode="decimal" placeholder="${esc(test.unit||'valor')}" ${test.scoring_key==='cooper'?'oninput="ttUpdateDerivedVO2(this.form)"':''}>`;
+  return field;
+}
+
+async function ensureTestFields(form,tests){
+  const grid=form.querySelector('.form-grid');
+  if(!grid)return;
+  const existing=new Set([...form.querySelectorAll('input[name^="test_"]')].map(i=>i.name.slice(5)));
+  const extra=grid.querySelector('.tt-assessment-extra');
+  const notes=grid.querySelector('textarea[name="notes"]')?.closest('.field');
+  const anchor=extra||notes||null;
+  for(const test of tests){
+    if(existing.has(String(test.id)))continue;
+    const field=testFieldMarkup(test);
+    if(anchor)grid.insertBefore(field,anchor);
+    else grid.appendChild(field);
+  }
+  [...form.querySelectorAll('input[name^="test_"]')].forEach(input=>{
+    const field=input.closest('.field');
+    if(field&&!field.dataset.templateTest)field.dataset.templateTest=input.name.slice(5);
+  });
+}
+
 async function groupForm(){
   const form=document.querySelector('#modalRoot form');
-  if(!form||form.querySelector('.tt-test-groups'))return;
+  if(!form)return;
+  const tests=await getTests();
+  await ensureTestFields(form,tests);
+
+  const existingGroups=form.querySelector('.tt-test-groups');
+  if(existingGroups){
+    const selector=form.querySelector('[name="assessment_template"]');
+    if(selector?.value&&window.ttApplyAssessmentTemplate)window.ttApplyAssessmentTemplate(selector);
+    syncEmptyGroups(form);
+    return;
+  }
+
   const fields=[...form.querySelectorAll('.field')].filter(f=>f.querySelector('input[name^="test_"]'));
   if(!fields.length)return;
-  const tests=await getTests();
   const byId=new Map(tests.map(t=>[String(t.id),t]));
   const first=fields[0];
   const groups=document.createElement('div');
   groups.className='field full tt-test-groups';
+  groups.innerHTML='<div class="tt-performance-head"><strong>Performance nos exercícios</strong><span>Regista aqui o resultado de cada teste selecionado no template.</span></div>';
 
   const grouped=new Map();
   for(const field of fields){
@@ -126,8 +170,14 @@ async function groupForm(){
     groups.appendChild(section);
   }
 
-  first.before(groups);
+  const dateField=form.querySelector('[name="assessment_date"]')?.closest('.field');
+  if(dateField)dateField.after(groups);
+  else first.before(groups);
+
   fields.forEach(f=>{if(f.parentElement!==groups&&!f.closest('.tt-test-group'))f.remove()});
+
+  const selector=form.querySelector('[name="assessment_template"]');
+  if(selector?.value&&window.ttApplyAssessmentTemplate)window.ttApplyAssessmentTemplate(selector);
   syncEmptyGroups(form);
 }
 
@@ -135,7 +185,8 @@ const baseAssessmentModal=window.assessmentModal;
 if(baseAssessmentModal){
   window.assessmentModal=async id=>{
     const result=await baseAssessmentModal(id);
-    setTimeout(()=>groupForm().catch(console.warn),100);
+    setTimeout(()=>groupForm().catch(console.warn),80);
+    setTimeout(()=>groupForm().catch(console.warn),220);
     return result;
   };
 }
