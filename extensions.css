@@ -667,3 +667,11 @@
   .wellbeing-score input{width:88px}
   .wellbeing-card textarea{min-height:54px}
 }
+
+/* Multi-day recurrence */
+.tt-weekday-options{display:flex;flex-wrap:wrap;gap:7px;margin-top:3px}
+.tt-weekday-options label{cursor:pointer}
+.tt-weekday-options input{position:absolute;opacity:0;pointer-events:none}
+.tt-weekday-options span{display:grid;place-items:center;min-width:42px;min-height:38px;padding:6px 9px;border:1px solid var(--border);border-radius:10px;background:#fff;font-size:10px;font-weight:800;color:#566379}
+.tt-weekday-options input:checked+span{border-color:#2563eb;background:#eef3ff;color:#1d4ed8;box-shadow:0 0 0 1px rgba(37,99,235,.08)}
+@media(max-width:640px){.tt-weekday-options{display:grid;grid-template-columns:repeat(4,minmax(0,1fr))}.tt-weekday-options span{min-width:0;width:100%}}
