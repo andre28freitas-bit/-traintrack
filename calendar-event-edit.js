@@ -56,7 +56,9 @@ window.ttSaveCalendarEventEdit=async function(e,eventId,occurrenceIso){
     const ev=await loadEvent(eventId),recurring=(ev.recurrence||'none')!=='none',scope=recurring?(fd.get('scope')||'single'):'all';
     const st=new Date(fd.get('starts_at')),en=new Date(fd.get('ends_at'));if(en<=st)return toast('A hora de fim tem de ser posterior ao início.',true);
     const recurrence=scope==='single'?'none':(fd.get('recurrence')||ev.recurrence||'none');
-    const row={student_id:fd.get('student_id'),starts_at:st.toISOString(),ends_at:en.toISOString(),event_type:fd.get('event_type'),location:String(fd.get('location')||'').trim()||null,notes:String(fd.get('notes')||'').trim()||null,status:ev.status||'scheduled',recurrence,recurrence_until:recurrence==='none'?null:(fd.get('recurrence_until')||null)};
+    let recurrence_days=recurrence==='weekly'?(Array.isArray(ev.recurrence_days)&&ev.recurrence_days.length?ev.recurrence_days.map(Number):[st.getDay()]):[];
+    if(scope==='single')recurrence_days=[];
+    const row={student_id:fd.get('student_id'),starts_at:st.toISOString(),ends_at:en.toISOString(),event_type:fd.get('event_type'),location:String(fd.get('location')||'').trim()||null,notes:String(fd.get('notes')||'').trim()||null,status:ev.status||'scheduled',recurrence,recurrence_days,recurrence_until:recurrence==='none'?null:(fd.get('recurrence_until')||null)};
 
     if(!recurring){
       const {error}=await db.from('traintrack_events').update({...row,recurrence_exceptions:[]}).eq('id',eventId);if(error)throw error;
