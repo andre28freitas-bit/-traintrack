@@ -167,8 +167,35 @@ async function enhanceTomorrow(){
 }
 window.ttRefreshTomorrowReminders=enhanceTomorrow;
 
+async function enhanceCalendarCards(){
+  const cards=[...document.querySelectorAll('#content .calendar .event')];
+  if(!cards.length)return;
+  const {data:states}=await db.from('traintrack_event_occurrences').select('event_id,occurrence_start,response_status');
+  const map=new Map((states||[]).map(x=>[x.event_id+'|'+new Date(x.occurrence_start).toISOString(),x.response_status]));
+  for(const card of cards){
+    const raw=card.getAttribute('onclick')||'';
+    const m=raw.match(/ttOpenEvent\('([^']+)'\s*,\s*'([^']+)'\)/);
+    if(!m)continue;
+    const eventId=m[1],occIso=new Date(m[2]).toISOString(),key=eventId+'|'+occIso;
+    let status=card.querySelector('.tt-calendar-confirm-status');
+    const value=map.get(key);
+    if(value){
+      if(!status){status=document.createElement('span');status.className='tt-reminder-status tt-calendar-confirm-status';card.appendChild(status)}
+      status.className='tt-reminder-status tt-calendar-confirm-status '+value;
+      status.textContent=statusLabel(value);
+    }
+    if(card.querySelector('.tt-contact-mini'))continue;
+    const actions=document.createElement('div');actions.className='tt-contact-mini';
+    actions.innerHTML='<button class="success" type="button">WA</button><button class="secondary" type="button">SMS</button><button class="secondary" type="button">Email</button><button class="secondary" type="button">☎</button>';
+    const channels=['whatsapp','sms','email','call'];
+    [...actions.querySelectorAll('button')].forEach((b,i)=>b.addEventListener('click',ev=>{ev.stopPropagation();window.ttEventContact(eventId,occIso,channels[i],false)}));
+    card.appendChild(actions);
+  }
+}
+
 let timer;
-const obs=new MutationObserver(()=>{clearTimeout(timer);timer=setTimeout(enhanceTomorrow,70)});
+const applyEnhancements=()=>{enhanceTomorrow();enhanceCalendarCards().catch(e=>console.warn('TrainTrack calendar contacts',e))};
+const obs=new MutationObserver(()=>{clearTimeout(timer);timer=setTimeout(applyEnhancements,70)});
 obs.observe(document.getElementById('root')||document.body,{childList:true,subtree:true});
-setTimeout(enhanceTomorrow,180);
+setTimeout(applyEnhancements,180);
 })();
