@@ -59,7 +59,8 @@
         './print-report.js',
         './calendar-nav-v2.js',
         './calendar-event-edit.js',
-        './dashboard-home-ui.js'
+        './dashboard-home-ui.js',
+        './client-engagement.js'
       ]) {
         await loadScript(src);
       }
