@@ -34,7 +34,9 @@ jobs:
           node --check print-report.js
           node --check calendar-nav-v2.js
           node --check calendar-event-edit.js
+          node --check calendar-weekdays.js
           node --check dashboard-home-ui.js
+          node --check client-engagement.js
           node --check sw.js
 
       - name: Validate manifest JSON
@@ -76,6 +78,8 @@ jobs:
           grep -q "calendar-nav-v2.js" bootstrap.js
           grep -q "calendar-event-edit.js" bootstrap.js
           grep -q "dashboard-home-ui.js" bootstrap.js
+          grep -q "calendar-weekdays.js" bootstrap.js
+          grep -q "client-engagement.js" bootstrap.js
           grep -q "assessment-engine-v3.js" bootstrap.js
           grep -q "assessment-form-ux.js" bootstrap.js
           grep -q "score-model.js" bootstrap.js
@@ -91,8 +95,19 @@ jobs:
           grep -q "ttDeleteCalendarEvent" calendar-event-edit.js
           grep -q "series_key" calendar-event-edit.js
           grep -q "recurrence_exceptions" calendar-event-edit.js
+          grep -q "recurrence_days" calendar-weekdays.js
+          grep -q "ttRecurrenceDays" calendar-weekdays.js
+          grep -q "BYDAY" calendar-weekdays.js
+          grep -q "recurrenceDays" calendar-nav-v2.js
+          grep -q "traintrack_event_occurrences" client-engagement.js
+          grep -q "Treinos de amanhã" client-engagement.js
+          grep -q "ttEventContact" client-engagement.js
+          grep -q "ttStudentContact" client-engagement.js
+          grep -q "sendSMS" app.js
+          grep -q "callStudent" app.js
+          grep -q "Multi-day recurrence" extensions.css
           grep -q "grid-template-columns:repeat(2" dashboard-home-ui.js
-          grep -q "Próximos 30 dias" dashboard-home-ui.js
+          grep -q "Próximos 7 dias" dashboard-home-ui.js
           grep -q "ttBirthdaySMS" dashboard-home-ui.js
           grep -q "ttBirthdayWhatsApp" dashboard-home-ui.js
           grep -q "workoutGridBody" app.js
