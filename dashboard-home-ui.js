@@ -99,7 +99,7 @@ async function fetchBirthdayPeople(){
     .filter(s=>(s.status||'active')==='active')
     .map(s=>{const b=nextBirthday(s.birth_date);return b?{...s,...b}:null})
     .filter(Boolean)
-    .filter(s=>s.days>=0&&s.days<=30)
+    .filter(s=>s.days>=0&&s.days<=7)
     .sort((a,b)=>a.days-b.days||a.name.localeCompare(b.name,'pt'));
 }
 
@@ -121,7 +121,7 @@ async function enhanceBirthdays(){
   try{
     if(!head.querySelector('.tt-birthday-window')){
       const wrap=head.querySelector('div');
-      if(wrap){const p=document.createElement('p');p.className='tt-birthday-window';p.textContent='Próximos 30 dias';wrap.appendChild(p)}
+      if(wrap){const p=document.createElement('p');p.className='tt-birthday-window';p.textContent='Próximos 7 dias';wrap.appendChild(p)}
     }
     const people=await fetchBirthdayPeople();
     if(!document.body.contains(list))return;
@@ -129,7 +129,7 @@ async function enhanceBirthdays(){
     list.dataset.ttBirthdayEnhanced='1';
     list.classList.add('tt-birthday-card');
     if(!people.length){
-      list.innerHTML='<div class="card empty tt-no-birthdays">Sem aniversários nos próximos 30 dias.</div>';
+      list.innerHTML='<div class="card empty tt-no-birthdays">Sem aniversários nos próximos 7 dias.</div>';
       return;
     }
     const mode=people.length<=2?'one-row':'two-rows';
