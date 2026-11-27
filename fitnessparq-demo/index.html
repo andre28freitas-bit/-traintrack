@@ -203,9 +203,8 @@ nav{display:flex;align-items:center;gap:28px;font-size:13px;font-weight:800;colo
     <div class="video-stack" id="videos">
       <video id="v0" muted playsinline webkit-playsinline preload="auto" src="https://dysqdeqqikyjrmqmtpsl.supabase.co/functions/v1/traintrack-demo-video?clip=pushup"></video>
       <video id="v1" muted playsinline webkit-playsinline preload="none" data-src="https://dysqdeqqikyjrmqmtpsl.supabase.co/functions/v1/traintrack-demo-video?clip=squat"></video>
-      <video id="v2" muted playsinline webkit-playsinline preload="none" data-src="https://dysqdeqqikyjrmqmtpsl.supabase.co/functions/v1/traintrack-demo-video?clip=burpee"></video>
-      <video id="v3" muted playsinline webkit-playsinline preload="none" data-src="https://dysqdeqqikyjrmqmtpsl.supabase.co/functions/v1/traintrack-demo-video?clip=mobility"></video>
-      <video id="v4" muted playsinline webkit-playsinline preload="none" data-src="https://dysqdeqqikyjrmqmtpsl.supabase.co/functions/v1/traintrack-demo-video?clip=run"></video>
+      <video id="v2" muted playsinline webkit-playsinline preload="none" data-src="https://dysqdeqqikyjrmqmtpsl.supabase.co/functions/v1/traintrack-demo-video?clip=mobility"></video>
+      <video id="v3" muted playsinline webkit-playsinline preload="none" data-src="https://dysqdeqqikyjrmqmtpsl.supabase.co/functions/v1/traintrack-demo-video?clip=run"></video>
     </div>
     <div class="video-loader" id="videoLoader"><span><i></i>A carregar movimento…</span></div>
     <div class="shade"></div>
@@ -302,8 +301,9 @@ nav{display:flex;align-items:center;gap:28px;font-size:13px;font-weight:800;colo
   const rail=[...document.querySelectorAll('.rail li')];
   const bar=document.getElementById('bar');
   const movement=document.getElementById('movement');
-  const names=['Flexões','Agachamentos','Burpees','Mobilidade','Corrida'];
-  const fallbacks=[10,32,26,12,10];
+  const names=['Flexões','Flexões','Agachamentos','Mobilidade','Corrida'];
+  const fallbacks=[10,32,12,10];
+  const stepClip=[0,0,1,2,3];
   const loader=document.getElementById('videoLoader');
   const durations=[...fallbacks];
   const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
@@ -347,7 +347,7 @@ nav{display:flex;align-items:center;gap:28px;font-size:13px;font-weight:800;colo
   const lastSeek=vids.map(()=>0);
   function seek(i,local,now){
     const v=vids[i]; if(!v||v.dataset.failed==='1'||v.readyState<1)return;
-    if(now-lastSeek[i]<70)return;
+    if(now-lastSeek[i]<(innerWidth<700?110:75))return;
     const d=durations[i]||fallbacks[i];
     const start=Math.min(.16,d*.025), end=Math.max(start+.25,d-.18);
     const t=start+(end-start)*clamp(local);
@@ -377,41 +377,48 @@ nav{display:flex;align-items:center;gap:28px;font-size:13px;font-weight:800;colo
     target=progress();
     p+=(target-p)*.18;
 
-    const n=vids.length;
-    const raw=p*n;
-    let idx=Math.min(n-1,Math.floor(raw));
-    let local=idx===n-1?clamp(raw-(n-1)):clamp(raw-idx);
+    const stepCount=steps.length;
+    const raw=p*stepCount;
+    const stepIdx=Math.min(stepCount-1,Math.floor(raw));
+    const local=stepIdx===stepCount-1?clamp(raw-(stepCount-1)):clamp(raw-stepIdx);
+    const clipIdx=stepClip[stepIdx];
+    const prevClip=stepIdx>0?stepClip[stepIdx-1]:clipIdx;
+    const nextClip=stepIdx<stepCount-1?stepClip[stepIdx+1]:clipIdx;
 
     vids.forEach(v=>{v.style.opacity='0';v.dataset.active='0'});
 
     let activeOpacity=1;
-    if(idx>0 && local<.10){
+    if(prevClip!==clipIdx && local<.10){
       const x=smooth(0,.10,local);
-      vids[idx-1].style.opacity=String(1-x);
-      vids[idx-1].dataset.active='1';
-      seek(idx-1,1-(.10-local)*.55,now);
+      attachSource(prevClip);
+      vids[prevClip].style.opacity=String(1-x);
+      vids[prevClip].dataset.active='1';
+      seek(prevClip,1-(.10-local)*.55,now);
       activeOpacity=x;
-    }else if(idx<n-1 && local>.90){
+    }else if(nextClip!==clipIdx && local>.90){
       const x=smooth(.90,1,local);
-      vids[idx+1].style.opacity=String(x);
-      vids[idx+1].dataset.active='1';
-      seek(idx+1,(local-.90)*.55,now);
+      attachSource(nextClip);
+      vids[nextClip].style.opacity=String(x);
+      vids[nextClip].dataset.active='1';
+      seek(nextClip,(local-.90)*.55,now);
       activeOpacity=1-x;
     }
-    vids[idx].style.opacity=String(activeOpacity);
-    vids[idx].dataset.active='1';
-    seek(idx,local,now);
 
-    if(idx!==lastStep){
-      lastStep=idx;
-      steps.forEach((e,i)=>e.classList.toggle('on',i===idx));
-      rail.forEach((e,i)=>e.classList.toggle('on',i<=idx));
-      movement.textContent=names[idx];
-      const next=Math.min(n-1,idx+1);
-      attachSource(idx);
-      attachSource(next);
-      vids[idx].preload='auto';
-      vids[next].preload='metadata';
+    attachSource(clipIdx);
+    vids[clipIdx].style.opacity=String(activeOpacity);
+    vids[clipIdx].dataset.active='1';
+    seek(clipIdx,local,now);
+
+    if(stepIdx!==lastStep){
+      lastStep=stepIdx;
+      steps.forEach((e,i)=>e.classList.toggle('on',i===stepIdx));
+      rail.forEach((e,i)=>e.classList.toggle('on',i<=stepIdx));
+      movement.textContent=names[stepIdx];
+
+      attachSource(clipIdx);
+      attachSource(nextClip);
+      vids[clipIdx].preload='auto';
+      if(nextClip!==clipIdx)vids[nextClip].preload='metadata';
     }
     bar.style.width=(p*100)+'%';
     requestAnimationFrame(render);
