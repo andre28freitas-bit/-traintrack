@@ -173,7 +173,8 @@ nav{display:flex;align-items:center;gap:28px;font-size:13px;font-weight:800;colo
   .point:nth-child(3){display:none}
 }
 @media(prefers-reduced-motion:reduce){
-  .sim{height:auto}.sim-stick{position:relative;top:0;height:760px}.scroll-hint{display:none}.step{transition:none}
+  .step{transition:none}
+  .scroll-hint i:after{animation:none}
 }
 </style>
 </head>
@@ -195,11 +196,11 @@ nav{display:flex;align-items:center;gap:28px;font-size:13px;font-weight:800;colo
 <section class="sim" id="sim">
   <div class="sim-stick">
     <div class="video-stack" id="videos">
-      <video id="v0" muted playsinline preload="metadata" src="https://www.pexels.com/download/video/4804783/"></video>
-      <video id="v1" muted playsinline preload="metadata" src="https://www.pexels.com/download/video/4764091/"></video>
-      <video id="v2" muted playsinline preload="metadata" src="https://www.pexels.com/download/video/2785532/"></video>
-      <video id="v3" muted playsinline preload="metadata" src="https://www.pexels.com/download/video/8836861/"></video>
-      <video id="v4" muted playsinline preload="metadata" src="https://www.pexels.com/download/video/8401329/"></video>
+      <video id="v0" muted playsinline webkit-playsinline preload="auto" src="https://videos.pexels.com/video-files/4804783/4804783-uhd_3840_2160_25fps.mp4"></video>
+      <video id="v1" muted playsinline webkit-playsinline preload="auto" src="https://videos.pexels.com/video-files/4764091/4764091-uhd_3840_2160_30fps.mp4"></video>
+      <video id="v2" muted playsinline webkit-playsinline preload="auto" src="https://videos.pexels.com/video-files/8858142/8858142-uhd_3840_2160_25fps.mp4"></video>
+      <video id="v3" muted playsinline webkit-playsinline preload="auto" src="https://videos.pexels.com/video-files/8380730/8380730-uhd_2560_1440_25fps.mp4"></video>
+      <video id="v4" muted playsinline webkit-playsinline preload="auto" src="https://videos.pexels.com/video-files/6891858/6891858-uhd_3840_2160_25fps.mp4"></video>
     </div>
     <div class="shade"></div>
     <div class="gridlines"></div>
@@ -295,10 +296,9 @@ nav{display:flex;align-items:center;gap:28px;font-size:13px;font-weight:800;colo
   const rail=[...document.querySelectorAll('.rail li')];
   const bar=document.getElementById('bar');
   const movement=document.getElementById('movement');
-  const names=['Flexões','Agachamento','Cardio','Mobilidade','Corrida'];
-  const fallbacks=[10,32,9,43,10];
+  const names=['Flexões','Agachamentos','Burpees','Corrida','Mobilidade'];
+  const fallbacks=[10,32,26,12,8];
   const durations=[...fallbacks];
-  const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
   const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
   const smooth=(a,b,x)=>{const t=clamp((x-a)/(b-a));return t*t*(3-2*t)};
   let p=0,target=0,lastStep=-1,primed=false;
@@ -308,14 +308,14 @@ nav{display:flex;align-items:center;gap:28px;font-size:13px;font-weight:800;colo
     v.playsInline=true;
     v.addEventListener('loadedmetadata',()=>{
       if(Number.isFinite(v.duration)&&v.duration>1)durations[i]=v.duration;
-      try{v.currentTime=Math.min(.15,durations[i]*.05)}catch(_){}
+      try{v.currentTime=Math.min(.12,durations[i]*.02)}catch(_){}
     });
+    v.addEventListener('canplay',()=>{ v.dataset.ready='1'; });
     v.addEventListener('error',()=>v.dataset.failed='1');
     v.load();
   });
 
   function progress(){
-    if(reduce)return 0;
     const r=sec.getBoundingClientRect();
     return clamp(-r.top/Math.max(1,sec.offsetHeight-innerHeight));
   }
@@ -325,24 +325,34 @@ nav{display:flex;align-items:center;gap:28px;font-size:13px;font-weight:800;colo
     const d=durations[i]||fallbacks[i];
     const start=Math.min(.18,d*.03), end=Math.max(start+.2,d-.22);
     const t=start+(end-start)*clamp(local);
-    if(v.readyState>=1 && Math.abs((v.currentTime||0)-t)>.035){
-      try{v.currentTime=t}catch(_){}
+    if(v.readyState>=1 && Math.abs((v.currentTime||0)-t)>.03){
+      try{
+        if(typeof v.fastSeek==='function') v.fastSeek(t);
+        else v.currentTime=t;
+      }catch(_){}
     }
   }
 
   async function prime(){
     if(primed)return;primed=true;
-    for(const v of vids){
-      try{await v.play();v.pause()}catch(_){}
+    const first=vids.slice(0,2);
+    for(const v of first){
+      try{
+        v.muted=true;
+        const p=v.play();
+        if(p&&typeof p.then==='function') await p;
+        v.pause();
+      }catch(_){}
     }
   }
   addEventListener('pointerdown',prime,{once:true,passive:true});
   addEventListener('touchstart',prime,{once:true,passive:true});
   addEventListener('wheel',prime,{once:true,passive:true});
+  addEventListener('scroll',prime,{once:true,passive:true});
 
   function render(){
     target=progress();
-    p+=reduce?0:(target-p)*.14;
+    p+=(target-p)*.18;
 
     const n=vids.length;
     const raw=p*n;
