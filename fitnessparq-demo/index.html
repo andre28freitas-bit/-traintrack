@@ -120,6 +120,11 @@ nav{display:flex;align-items:center;gap:28px;font-size:13px;font-weight:800;colo
   font-size:10px;color:#d9e6fb;font-weight:800;letter-spacing:.05em
 }
 .video-state b{color:#8ef5e1}
+.video-loader{position:absolute;inset:0;z-index:8;display:grid;place-items:center;background:radial-gradient(circle at 70% 30%,#173779 0%,#07183f 55%,#04102d 100%);transition:opacity .3s ease,visibility .3s ease}
+.video-loader.off{opacity:0;visibility:hidden}
+.video-loader span{display:inline-flex;align-items:center;gap:10px;padding:10px 13px;border-radius:999px;background:rgba(2,10,30,.55);color:#d9e6fb;font-size:11px;font-weight:800;letter-spacing:.05em}
+.video-loader i{width:8px;height:8px;border-radius:50%;background:var(--cyan);box-shadow:0 0 0 0 rgba(22,217,186,.45);animation:pulse 1.2s infinite}
+@keyframes pulse{70%{box-shadow:0 0 0 9px rgba(22,217,186,0)}100%{box-shadow:0 0 0 0 rgba(22,217,186,0)}}
 
 /* after immersive */
 .after{
@@ -196,12 +201,13 @@ nav{display:flex;align-items:center;gap:28px;font-size:13px;font-weight:800;colo
 <section class="sim" id="sim">
   <div class="sim-stick">
     <div class="video-stack" id="videos">
-      <video id="v0" muted playsinline webkit-playsinline preload="auto" src="https://videos.pexels.com/video-files/4804783/4804783-uhd_3840_2160_25fps.mp4"></video>
-      <video id="v1" muted playsinline webkit-playsinline preload="auto" src="https://videos.pexels.com/video-files/4764091/4764091-uhd_3840_2160_30fps.mp4"></video>
-      <video id="v2" muted playsinline webkit-playsinline preload="auto" src="https://videos.pexels.com/video-files/8858142/8858142-uhd_3840_2160_25fps.mp4"></video>
-      <video id="v3" muted playsinline webkit-playsinline preload="auto" src="https://videos.pexels.com/video-files/8380730/8380730-uhd_2560_1440_25fps.mp4"></video>
-      <video id="v4" muted playsinline webkit-playsinline preload="auto" src="https://videos.pexels.com/video-files/6891858/6891858-uhd_3840_2160_25fps.mp4"></video>
+      <video id="v0" muted playsinline webkit-playsinline preload="auto" src="https://dysqdeqqikyjrmqmtpsl.supabase.co/functions/v1/traintrack-demo-video?clip=pushup"></video>
+      <video id="v1" muted playsinline webkit-playsinline preload="none" data-src="https://dysqdeqqikyjrmqmtpsl.supabase.co/functions/v1/traintrack-demo-video?clip=squat"></video>
+      <video id="v2" muted playsinline webkit-playsinline preload="none" data-src="https://dysqdeqqikyjrmqmtpsl.supabase.co/functions/v1/traintrack-demo-video?clip=burpee"></video>
+      <video id="v3" muted playsinline webkit-playsinline preload="none" data-src="https://dysqdeqqikyjrmqmtpsl.supabase.co/functions/v1/traintrack-demo-video?clip=mobility"></video>
+      <video id="v4" muted playsinline webkit-playsinline preload="none" data-src="https://dysqdeqqikyjrmqmtpsl.supabase.co/functions/v1/traintrack-demo-video?clip=run"></video>
     </div>
+    <div class="video-loader" id="videoLoader"><span><i></i>A carregar movimento…</span></div>
     <div class="shade"></div>
     <div class="gridlines"></div>
 
@@ -296,43 +302,58 @@ nav{display:flex;align-items:center;gap:28px;font-size:13px;font-weight:800;colo
   const rail=[...document.querySelectorAll('.rail li')];
   const bar=document.getElementById('bar');
   const movement=document.getElementById('movement');
-  const names=['Flexões','Agachamentos','Burpees','Corrida','Mobilidade'];
-  const fallbacks=[10,32,26,12,8];
+  const names=['Flexões','Agachamentos','Burpees','Mobilidade','Corrida'];
+  const fallbacks=[10,32,26,12,10];
+  const loader=document.getElementById('videoLoader');
   const durations=[...fallbacks];
   const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
   const smooth=(a,b,x)=>{const t=clamp((x-a)/(b-a));return t*t*(3-2*t)};
   let p=0,target=0,lastStep=-1,primed=false;
 
+  function attachSource(i){
+    const v=vids[i];
+    if(!v||v.src||!v.dataset.src)return;
+    v.src=v.dataset.src;
+    v.preload=i===0?'auto':'metadata';
+    v.load();
+  }
   vids.forEach((v,i)=>{
     v.muted=true;
     v.playsInline=true;
+    v.setAttribute('playsinline','');
+    v.setAttribute('webkit-playsinline','');
     v.addEventListener('loadedmetadata',()=>{
       if(Number.isFinite(v.duration)&&v.duration>1)durations[i]=v.duration;
       try{v.currentTime=Math.min(.12,durations[i]*.02)}catch(_){}
     });
-    v.addEventListener('canplay',()=>{ v.dataset.ready='1'; });
-    v.addEventListener('loadeddata',()=>{v.dataset.ready='1'; if(i===0 && !v.dataset.started){v.dataset.started='1'; try{v.currentTime=Math.min(.2,Math.max(.05,(v.duration||1)*.03))}catch(_){}}});
-    v.addEventListener('canplay',()=>v.dataset.ready='1');
-    v.addEventListener('error',()=>{v.dataset.failed='1'; console.warn('FitnessParQ video failed',i,v.error);});
-    v.load();
+    v.addEventListener('loadeddata',async()=>{
+      v.dataset.ready='1';
+      if(i===0){
+        loader?.classList.add('off');
+        try{const p=v.play();if(p&&p.then)await p;v.pause();v.currentTime=Math.min(.18,Math.max(.05,(v.duration||1)*.025));}catch(_){}
+      }
+    });
+    v.addEventListener('canplay',()=>{v.dataset.ready='1';if(i===0)loader?.classList.add('off')});
+    v.addEventListener('error',()=>{v.dataset.failed='1';console.warn('FitnessParQ video failed',i,v.error);if(i===0&&loader){loader.querySelector('span').textContent='Não foi possível carregar o vídeo. Tenta atualizar a página.'}});
   });
+  attachSource(0);
+  attachSource(1);
 
   function progress(){
     const r=sec.getBoundingClientRect();
     return clamp(-r.top/Math.max(1,sec.offsetHeight-innerHeight));
   }
 
-  function seek(i,local){
-    const v=vids[i]; if(!v||v.dataset.failed==='1')return;
+  const lastSeek=vids.map(()=>0);
+  function seek(i,local,now){
+    const v=vids[i]; if(!v||v.dataset.failed==='1'||v.readyState<1)return;
+    if(now-lastSeek[i]<70)return;
     const d=durations[i]||fallbacks[i];
-    const start=Math.min(.18,d*.03), end=Math.max(start+.2,d-.22);
+    const start=Math.min(.16,d*.025), end=Math.max(start+.25,d-.18);
     const t=start+(end-start)*clamp(local);
-    if(v.readyState>=1 && Math.abs((v.currentTime||0)-t)>.03){
-      try{
-        if(typeof v.fastSeek==='function') v.fastSeek(t);
-        else v.currentTime=t;
-      }catch(_){}
-    }
+    if(Math.abs((v.currentTime||0)-t)<.045)return;
+    lastSeek[i]=now;
+    try{v.currentTime=t}catch(_){}
   }
 
   async function prime(){
@@ -352,7 +373,7 @@ nav{display:flex;align-items:center;gap:28px;font-size:13px;font-weight:800;colo
   addEventListener('wheel',prime,{once:true,passive:true});
   addEventListener('scroll',prime,{once:true,passive:true});
 
-  function render(){
+  function render(now){
     target=progress();
     p+=(target-p)*.18;
 
@@ -368,18 +389,18 @@ nav{display:flex;align-items:center;gap:28px;font-size:13px;font-weight:800;colo
       const x=smooth(0,.10,local);
       vids[idx-1].style.opacity=String(1-x);
       vids[idx-1].dataset.active='1';
-      seek(idx-1,1-(.10-local)*.55);
+      seek(idx-1,1-(.10-local)*.55,now);
       activeOpacity=x;
     }else if(idx<n-1 && local>.90){
       const x=smooth(.90,1,local);
       vids[idx+1].style.opacity=String(x);
       vids[idx+1].dataset.active='1';
-      seek(idx+1,(local-.90)*.55);
+      seek(idx+1,(local-.90)*.55,now);
       activeOpacity=1-x;
     }
     vids[idx].style.opacity=String(activeOpacity);
     vids[idx].dataset.active='1';
-    seek(idx,local);
+    seek(idx,local,now);
 
     if(idx!==lastStep){
       lastStep=idx;
@@ -387,10 +408,10 @@ nav{display:flex;align-items:center;gap:28px;font-size:13px;font-weight:800;colo
       rail.forEach((e,i)=>e.classList.toggle('on',i<=idx));
       movement.textContent=names[idx];
       const next=Math.min(n-1,idx+1);
+      attachSource(idx);
+      attachSource(next);
       vids[idx].preload='auto';
-      vids[next].preload='auto';
-      if(vids[idx].readyState===0)vids[idx].load();
-      if(vids[next].readyState===0)vids[next].load();
+      vids[next].preload='metadata';
     }
     bar.style.width=(p*100)+'%';
     requestAnimationFrame(render);
