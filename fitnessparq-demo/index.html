@@ -311,7 +311,9 @@ nav{display:flex;align-items:center;gap:28px;font-size:13px;font-weight:800;colo
       try{v.currentTime=Math.min(.12,durations[i]*.02)}catch(_){}
     });
     v.addEventListener('canplay',()=>{ v.dataset.ready='1'; });
-    v.addEventListener('error',()=>v.dataset.failed='1');
+    v.addEventListener('loadeddata',()=>{v.dataset.ready='1'; if(i===0 && !v.dataset.started){v.dataset.started='1'; try{v.currentTime=Math.min(.2,Math.max(.05,(v.duration||1)*.03))}catch(_){}}});
+    v.addEventListener('canplay',()=>v.dataset.ready='1');
+    v.addEventListener('error',()=>{v.dataset.failed='1'; console.warn('FitnessParQ video failed',i,v.error);});
     v.load();
   });
 
@@ -387,6 +389,7 @@ nav{display:flex;align-items:center;gap:28px;font-size:13px;font-weight:800;colo
       const next=Math.min(n-1,idx+1);
       vids[idx].preload='auto';
       vids[next].preload='auto';
+      if(vids[idx].readyState===0)vids[idx].load();
       if(vids[next].readyState===0)vids[next].load();
     }
     bar.style.width=(p*100)+'%';
