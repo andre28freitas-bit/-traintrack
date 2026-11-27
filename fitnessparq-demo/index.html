@@ -67,6 +67,31 @@ nav{display:flex;align-items:center;gap:28px;font-size:13px;font-weight:800;colo
 .rail li:after{content:"";width:8px;height:8px;border-radius:50%;border:1px solid currentColor;transition:.25s}.rail li.on{color:#8ef5e1}.rail li.on:after{background:var(--cyan);box-shadow:0 0 0 5px rgba(22,217,186,.12)}
 .bar{position:absolute;left:0;right:0;bottom:0;height:3px;background:rgba(255,255,255,.12);z-index:12}.bar span{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--cyan),#4fb6ff)}
 
+
+.experience{padding:100px clamp(20px,6vw,90px);background:linear-gradient(180deg,#f7fbff 0%,#fff 100%);border-top:1px solid var(--line)}
+.experience-head{max-width:900px;margin:0 auto 48px;text-align:center}
+.experience-head .mini,.trust .mini{color:#139e88;font-size:11px;letter-spacing:.16em;text-transform:uppercase;font-weight:900}
+.experience-head h3,.trust h3{font-size:clamp(40px,5vw,68px);letter-spacing:-.055em;line-height:.95;color:var(--navy);margin:12px 0 16px}
+.experience-head p,.trust-intro{color:var(--muted);font-size:18px;line-height:1.6;max-width:780px;margin:0 auto}
+.experience-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;max-width:1120px;margin:auto}
+.exp-card{position:relative;overflow:hidden;border:1px solid var(--line);border-radius:22px;background:#fff;padding:28px;min-height:250px}
+.exp-icon{width:52px;height:52px;border-radius:16px;background:#e9fbf6;color:#0a9f89;display:grid;place-items:center;font-size:24px;font-weight:900;margin-bottom:26px}
+.exp-card h4{font-size:24px;color:var(--navy);letter-spacing:-.035em;margin-bottom:10px}
+.exp-card p{color:var(--muted);line-height:1.58;font-size:15px}
+.exp-card strong{display:block;color:#263a62;margin-top:18px;font-size:13px}
+.exp-card:after{content:"";position:absolute;width:120px;height:120px;border-radius:50%;right:-55px;bottom:-60px;background:rgba(22,217,186,.08)}
+
+.trust{padding:100px clamp(20px,6vw,90px);background:#07163d;color:#fff}
+.trust-wrap{max-width:1120px;margin:auto;display:grid;grid-template-columns:.95fr 1.05fr;gap:54px;align-items:center}
+.trust h3{color:#fff}.trust h3 span{color:var(--cyan)}
+.trust-intro{color:#c9d7ef;margin:0;max-width:560px}
+.trust-badges{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.trust-card{border:1px solid rgba(255,255,255,.12);border-radius:18px;padding:20px;background:rgba(255,255,255,.045)}
+.trust-card small{display:block;color:#8ea5cd;font-size:9px;letter-spacing:.13em;text-transform:uppercase;font-weight:850;margin-bottom:7px}
+.trust-card b{display:block;color:#fff;font-size:18px;line-height:1.25}
+.trust-card p{margin-top:8px;color:#b8c7e2;font-size:13px;line-height:1.5}
+.trust-note{margin-top:18px;padding:15px 17px;border-left:3px solid var(--cyan);background:rgba(22,217,186,.07);color:#cbdaf1;font-size:13px;line-height:1.55}
+
 .after{padding:100px clamp(20px,6vw,90px);background:#fff}.after-head{max-width:820px;margin:0 auto 48px;text-align:center}.after-head .mini{color:#139e88;font-size:11px;letter-spacing:.16em;text-transform:uppercase;font-weight:900}
 .after h3{font-size:clamp(40px,5vw,68px);letter-spacing:-.055em;line-height:.95;color:var(--navy);margin:12px 0 16px}.after-head p{color:var(--muted);font-size:18px;line-height:1.6}
 .cards{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;max-width:1120px;margin:auto}.card{border:1px solid var(--line);border-radius:20px;padding:26px;background:var(--soft)}.card b{display:block;color:var(--navy);font-size:21px;margin-bottom:7px}.card p{color:var(--muted);line-height:1.55}
@@ -77,7 +102,7 @@ nav{display:flex;align-items:center;gap:28px;font-size:13px;font-weight:800;colo
   .sim-stick:after{background:linear-gradient(180deg,rgba(5,18,49,.03) 24%,rgba(5,18,49,.16) 48%,rgba(5,18,49,.93) 70%,#051231 100%)}
   .simulator{top:25px;right:0;left:0;transform:none;width:100%;height:53%;padding:0 10px}.sim-orbit{width:52%}.metric-panel{right:12px;top:24%;width:128px}.metric-chip{padding:8px 9px}.metric-chip b{font-size:14px}
   .copy{left:22px;right:22px;top:auto;bottom:26px;transform:none;width:auto;height:320px}.step{top:auto;bottom:0}.step h1,.step h2{font-size:clamp(42px,12vw,58px);margin:12px 0 12px}.step p{font-size:15.5px}.points{margin-top:15px;gap:7px}.point{font-size:12.5px}.scroll-hint{margin-top:17px}
-  .rail{right:auto;left:22px;top:17px;transform:none;display:flex;gap:15px}.rail li{font-size:0;gap:0}.mode-pill{right:14px;top:12px}.cards{grid-template-columns:1fr}.final{grid-template-columns:1fr}
+  .rail{right:auto;left:22px;top:17px;transform:none;display:flex;gap:15px}.rail li{font-size:0;gap:0}.mode-pill{right:14px;top:12px}.experience-grid,.trust-badges,.cards{grid-template-columns:1fr}.trust-wrap{grid-template-columns:1fr;gap:34px}.final{grid-template-columns:1fr}
 }
 @media(max-width:520px){
   header{height:64px;padding:0 14px}.brand{font-size:16px}.brand svg{width:34px;height:34px}.nav-cta{min-height:40px;padding:0 12px;font-size:12px}
@@ -108,7 +133,7 @@ nav{display:flex;align-items:center;gap:28px;font-size:13px;font-weight:800;colo
       <article class="step on" data-step="0">
         <div class="eyebrow">Saúde · Força · Longevidade</div>
         <h1>Treina para<br><span>viver melhor.</span></h1>
-        <p>Não é sobre perseguir apenas um número na balança. É construir força, capacidade e autonomia para viver melhor hoje e durante mais anos.</p>
+        <p>Não é sobre perseguir apenas um número na balança. É construir força, capacidade e autonomia com treino personalizado, em casa ou ao ar livre, acompanhado de perto.</p>
         <div class="scroll-hint"><i></i>Faz scroll e controla o movimento</div>
       </article>
       <article class="step" data-step="1">
@@ -196,8 +221,54 @@ nav{display:flex;align-items:center;gap:28px;font-size:13px;font-weight:800;colo
   </div>
 </section>
 
+
+<section class="experience" id="experiencia">
+  <div class="experience-head">
+    <div class="mini">O treino adapta-se à tua vida</div>
+    <h3>Treina onde te sentes melhor.</h3>
+    <p>Não tens de adaptar a tua rotina ao treino. O treino adapta-se a ti — em casa, ao ar livre e sempre com acompanhamento próximo.</p>
+  </div>
+  <div class="experience-grid">
+    <article class="exp-card">
+      <div class="exp-icon">⌂</div>
+      <h4>Ao domicílio</h4>
+      <p>Treino no conforto da tua casa, sem deslocações e com um plano pensado para o espaço e material que tens disponível.</p>
+      <strong>Mais conveniência. Menos barreiras para treinar.</strong>
+    </article>
+    <article class="exp-card">
+      <div class="exp-icon">↗</div>
+      <h4>Ao ar livre</h4>
+      <p>Parques, jardins e espaços exteriores podem ser o teu ginásio. Movimento, ar livre e variedade sem perder estrutura ou progressão.</p>
+      <strong>Liberdade para treinar fora de quatro paredes.</strong>
+    </article>
+    <article class="exp-card">
+      <div class="exp-icon">1:1</div>
+      <h4>Acompanhamento próximo</h4>
+      <p>Cada sessão é acompanhada, corrigida e adaptada ao que estás a sentir naquele dia. Não és mais uma pessoa num plano genérico.</p>
+      <strong>Mais atenção, mais segurança, melhor progressão.</strong>
+    </article>
+  </div>
+</section>
+
+<section class="trust">
+  <div class="trust-wrap">
+    <div>
+      <div class="mini">Conhecimento + acompanhamento</div>
+      <h3>Treino acompanhado por um <span>profissional qualificado.</span></h3>
+      <p class="trust-intro">Por trás de cada exercício há avaliação, conhecimento e decisão. O objetivo é treinar de forma adequada ao teu nível, histórico e capacidade atual.</p>
+      <div class="trust-note">A formação não termina no diploma: atualização e formação contínua fazem parte da forma como o acompanhamento é pensado.</div>
+    </div>
+    <div class="trust-badges">
+      <article class="trust-card"><small>Base profissional</small><b>Formação de ensino superior</b><p>Conhecimento estruturado nas áreas do exercício, movimento e acompanhamento físico.</p></article>
+      <article class="trust-card"><small>Atualização contínua</small><b>Formações complementares</b><p>Aprendizagem contínua para acompanhar novas abordagens, técnicas e boas práticas.</p></article>
+      <article class="trust-card"><small>Na prática</small><b>Acompanhamento individual</b><p>Correção de execução, adaptação da sessão e progressão de acordo com a resposta de cada pessoa.</p></article>
+      <article class="trust-card"><small>O foco</small><b>Saúde, capacidade e autonomia</b><p>Treinar para viver melhor, com objetivos que vão muito além da estética ou do peso.</p></article>
+    </div>
+  </div>
+</section>
+
 <section class="after" id="metodo">
-  <div class="after-head"><div class="mini">Acompanhamento personalizado</div><h3>Treino com um objetivo maior.</h3><p>O ponto de partida não é “quanto queres perder?”. É perceber como te moves, como te sentes e que capacidades queres preservar ou melhorar.</p></div>
+  <div class="after-head"><div class="mini">Acompanhamento personalizado</div><h3>Treino com um objetivo maior.</h3><p>O ponto de partida não é “quanto queres perder?”. É perceber como te moves, como te sentes e que capacidades queres preservar ou melhorar — e construir um plano que funcione na tua vida real.</p></div>
   <div class="cards">
     <article class="card"><b>1. Avaliação</b><p>Histórico, rotina, força, mobilidade e capacidade atual para perceber o teu ponto de partida.</p></article>
     <article class="card"><b>2. Plano</b><p>Treino personalizado e progressivo, adaptado à tua vida e à tua disponibilidade real.</p></article>
